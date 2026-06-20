@@ -2,6 +2,7 @@ import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angula
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 import { ApiService } from '@core/services/api.service';
+import { ChatService } from '@core/services/chat.service';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -42,7 +43,9 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   navItems = [
     { name: 'Tienda', icon: 'fas fa-store', section: 'tienda', badge: 0 },
+    { name: 'Chat en vivo', icon: 'fas fa-comments', section: 'chat', badge: 0 },
     { name: 'Mis Pedidos', icon: 'fas fa-shopping-cart', section: 'mis-pedidos', badge: 0 },
+    { name: 'Notificaciones', icon: 'fas fa-bell', section: 'notificaciones', badge: 0 },
     { name: 'Soporte', icon: 'fas fa-headset', section: 'soporte', badge: 0 },
   ];
 
@@ -50,6 +53,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     { name: 'Dashboard', icon: 'fas fa-th-large', section: 'dashboard' },
     { name: 'Productos', icon: 'fas fa-box', section: 'productos' },
     { name: 'Pedidos', icon: 'fas fa-shopping-cart', section: 'pedidos' },
+    { name: 'Chat en vivo', icon: 'fas fa-comments', section: 'chat' },
     { name: 'Notificaciones', icon: 'fas fa-bell', section: 'notificaciones', badge: 0 },
     { name: 'Configuración', icon: 'fas fa-cog', section: 'config' },
   ];
@@ -61,6 +65,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
     { name: 'Ganancias', icon: 'fas fa-wallet', section: 'ganancias' },
     { name: 'Socios', icon: 'fas fa-handshake', section: 'socios' },
     { name: 'Analíticas', icon: 'fas fa-chart-line', section: 'analytics' },
+    { name: 'Chat en vivo', icon: 'fas fa-comments', section: 'chat' },
     { name: 'Notificaciones', icon: 'fas fa-bell', section: 'notificaciones', badge: 0 },
     { name: 'Configuración', icon: 'fas fa-cog', section: 'config' },
   ];
@@ -218,6 +223,20 @@ export class HomeComponent implements OnInit, AfterViewInit {
   selectedProduct: any = null;
   selectedPlan: any = null;
 
+  // Chat
+  chatConversations: any[] = [];
+  chatChannels: any[] = [];
+  activeChat: any = null;
+  chatMessages: any[] = [];
+  chatInput = '';
+  chatLoading = false;
+  chatUsers: any[] = [];
+  showChatModal = false;
+
+  // Notifications from API
+  apiNotifications: any[] = [];
+  showNotifications = false;
+
   paymentMethods = [
     { id: 'paypal', name: 'PayPal', icon: 'fab fa-paypal', color: '#003087', description: 'Pago instantáneo con PayPal' },
     { id: 'binance', name: 'Binance Pay', icon: 'fas fa-coins', color: '#f0b90b', description: 'Paga con BNB, BTC, USDT y más' },
@@ -227,7 +246,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
   constructor(
     private auth: AuthService,
     private router: Router,
-    private api: ApiService
+    private api: ApiService,
+    private chatService: ChatService
   ) {}
 
   ngOnInit(): void {
@@ -236,6 +256,8 @@ export class HomeComponent implements OnInit, AfterViewInit {
       this.activeSection = 'tienda';
     }
     this.loadProducts();
+    this.loadChat();
+    this.loadNotifications();
     if (!this.isClient) {
       this.loadPartners();
     }
@@ -310,6 +332,107 @@ export class HomeComponent implements OnInit, AfterViewInit {
       },
       error: () => {}
     });
+  }
+
+  loadChat(): void {
+    this.chatService.getConversations().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.chatChannels = res.data.filter((c: any) => c.type === 'channel');
+          this.chatConversations = res.data.filter((c: any) => c.type !== 'channel');
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  loadNotifications(): void {
+    this.chatService.getNotifications().subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.apiNotifications = res.data;
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  openChatChannel(channel: any): void {
+    this.activeChat = channel;
+    this.chatMessages = [];
+    this.chatLoading = true;
+    this.chatService.getMessages(channel._id).subscribe({
+      next: (res) => {
+        this.chatMessages = res.data || [];
+        this.chatLoading = false;
+        this.chatService.markAsRead(channel._id).subscribe();
+      },
+      error: () => { this.chatLoading = false; }
+    });
+  }
+
+  sendChatMessage(): void {
+    if (!this.chatInput.trim() || !this.activeChat) return;
+    const content = this.chatInput.trim();
+    this.chatInput = '';
+    this.chatService.sendMessage(this.activeChat._id, content).subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.chatMessages.push(res.data);
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  openNewChatModal(): void {
+    this.chatService.getChatUsers().subscribe({
+      next: (res) => {
+        this.chatUsers = (res.data || []).filter((u: any) => u._id !== this.user?.id);
+        this.showChatModal = true;
+      },
+      error: () => {}
+    });
+  }
+
+  startDirectChat(userId: string): void {
+    this.chatService.createConversation(userId).subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.showChatModal = false;
+          this.loadChat();
+          setTimeout(() => this.openChatChannel(res.data), 300);
+        }
+      },
+      error: () => {}
+    });
+  }
+
+  toggleNotifications(): void {
+    this.showNotifications = !this.showNotifications;
+  }
+
+  markNotifRead(id: string): void {
+    this.chatService.markNotificationRead(id).subscribe({
+      next: () => {
+        const n = this.apiNotifications.find((x: any) => x._id === id);
+        if (n) n.isRead = true;
+      },
+      error: () => {}
+    });
+  }
+
+  markAllNotifsRead(): void {
+    this.chatService.markAllNotificationsRead().subscribe({
+      next: () => {
+        this.apiNotifications.forEach((n: any) => n.isRead = true);
+      },
+      error: () => {}
+    });
+  }
+
+  get unreadNotifCount(): number {
+    return this.apiNotifications.filter((n: any) => !n.isRead).length;
   }
 
   openPartnerModal(partner?: any): void {

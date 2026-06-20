@@ -38,18 +38,20 @@ export class AuthService {
   }
 
   googleLogin(): Promise<LoginResponse> {
-    return signInWithPopup(this.firebaseInit.auth, this.firebaseInit.googleProvider)
-      .then((result: UserCredential) => result.user.getIdToken())
-      .then((idToken) => {
-        return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/google`, { idToken })
-          .pipe(
-            map((res) => res.data),
-            tap((data) => {
-              localStorage.setItem('token', data.token);
-              localStorage.setItem('user', JSON.stringify(data.user));
-            })
-          ).toPromise();
-      }) as Promise<LoginResponse>;
+    return this.firebaseInit.init().then(() => {
+      return signInWithPopup(this.firebaseInit.auth, this.firebaseInit.googleProvider)
+        .then((result: UserCredential) => result.user.getIdToken())
+        .then((idToken) => {
+          return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/google`, { idToken })
+            .pipe(
+              map((res) => res.data),
+              tap((data) => {
+                localStorage.setItem('token', data.token);
+                localStorage.setItem('user', JSON.stringify(data.user));
+              })
+            ).toPromise();
+        });
+    }) as Promise<LoginResponse>;
   }
 
   logout(): void {
