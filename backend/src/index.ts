@@ -5,6 +5,7 @@ import express from 'express';
 import cors from 'cors';
 import { connectDatabase } from './services/database';
 import { config } from './config';
+import { applySecurity } from './middleware/security.middleware';
 import { ProductModel } from './models/product.model';
 import { ConversationModel, MessageModel } from './models/message.model';
 import { NotificationModel } from './models/notification.model';
@@ -19,6 +20,8 @@ import clienteRoutes from './routes/cliente.routes';
 
 const app = express();
 
+applySecurity(app);
+
 const allowedOrigins = [
   'http://localhost:4200',
   'http://127.0.0.1:4200',
@@ -26,8 +29,24 @@ const allowedOrigins = [
 if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);
 }
-app.use(cors({ origin: allowedOrigins, credentials: true }));
-app.use(express.json({ limit: '10kb' }));
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log(`[SECURITY] CORS blocked from: ${origin}`);
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  maxAge: 86400,
+}));
+
+app.use(express.json({ limit: '5kb' }));
+
+app.set('trust proxy', 1);
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);

@@ -48,6 +48,11 @@ export async function login(req: AuthRequest, res: Response): Promise<void> {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      res.status(400).json({ message: 'Email y contraseña son requeridos' });
+      return;
+    }
+
     const user = await UserModel.findOne({
       $or: [
         { email: { $regex: new RegExp(`^${email}$`, 'i') } },
@@ -55,15 +60,19 @@ export async function login(req: AuthRequest, res: Response): Promise<void> {
       ],
     });
     if (!user) {
+      if ((req as any).trackLoginAttempt) (req as any).trackLoginAttempt(false);
       res.status(401).json({ message: 'Credenciales inválidas' });
       return;
     }
 
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) {
+      if ((req as any).trackLoginAttempt) (req as any).trackLoginAttempt(false);
       res.status(401).json({ message: 'Credenciales inválidas' });
       return;
     }
+
+    if ((req as any).trackLoginAttempt) (req as any).trackLoginAttempt(true);
 
     const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
 
