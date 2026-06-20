@@ -336,7 +336,7 @@
             <h1>Socios</h1>
             <p>Vendedores afiliados al panel</p>
           </div>
-          <button class="btn-primary" *ngIf="user?.role === 'admin'">
+          <button class="btn-primary" *ngIf="user?.role === 'admin'" (click)="openPartnerModal()">
             <i class="fas fa-plus"></i> Invitar Socio
           </button>
         </div>
@@ -350,27 +350,20 @@
         <div class="partners-grid" *ngIf="partners.length > 0">
           <div class="card partner-card" *ngFor="let partner of partners">
             <div class="partner-header">
-              <div class="partner-avatar">{{ partner.avatar }}</div>
-              <span class="badge" [ngClass]="partner.status === 'active' ? 'badge-success' : 'badge-danger'">
-                {{ partner.status === 'active' ? 'Activo' : 'Inactivo' }}
-              </span>
+              <div class="partner-avatar">
+                <img src="assets/images/Supremo_Cheats.gif" alt="Socio" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">
+              </div>
+              <span class="badge badge-success">Vendedor</span>
             </div>
             <h3 class="partner-name">{{ partner.name }}</h3>
-            <div class="partner-stats">
-              <div class="partner-stat">
-                <span class="partner-stat-value">{{ partner.sales }}</span>
-                <span class="partner-stat-label">Ventas</span>
-              </div>
-              <div class="partner-stat">
-                <span class="partner-stat-value">{{ partner.earnings }}</span>
-                <span class="partner-stat-label">Ganancias</span>
-              </div>
-              <div class="partner-stat">
-                <span class="partner-stat-value">
-                  <i class="fas fa-star" style="color: #fbbf24;"></i> {{ partner.rating }}
-                </span>
-                <span class="partner-stat-label">Rating</span>
-              </div>
+            <p style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">{{ partner.email }}</p>
+            <div class="partner-actions" *ngIf="user?.role === 'admin'" style="margin-top: 12px; display: flex; gap: 8px;">
+              <button class="btn-sm btn-outline" (click)="openPartnerModal(partner)">
+                <i class="fas fa-edit"></i> Editar
+              </button>
+              <button class="btn-sm btn-danger" (click)="deletePartner(partner)">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
             </div>
           </div>
         </div>
@@ -610,10 +603,44 @@
     <footer class="dashboard-footer">
       <div class="footer-content">
         <span>&copy; 2026 SUPREMO CHEATS &middot; Todos los derechos reservados</span>
+        <span class="footer-developer">Developer <strong>Asmodeus</strong></span>
         <a [href]="discordUrl" target="_blank" class="footer-discord">
           <i class="fab fa-discord"></i> Soporte en Discord
         </a>
       </div>
     </footer>
+  </div>
+</div>
+
+<!-- Modal Invitar/Editar Socio -->
+<div class="modal-overlay" *ngIf="showPartnerModal" (click)="closePartnerModal()">
+  <div class="modal-content card" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>{{ editingPartner ? 'Editar Socio' : 'Invitar Socio' }}</h2>
+      <button class="btn-icon" (click)="closePartnerModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="alert alert-error" *ngIf="partnerError">{{ partnerError }}</div>
+      <div class="alert alert-success" *ngIf="partnerSuccess">{{ partnerSuccess }}</div>
+
+      <div class="form-group">
+        <label>Nombre</label>
+        <input type="text" [(ngModel)]="partnerForm.name" placeholder="Nombre del socio" class="form-input">
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" [(ngModel)]="partnerForm.email" placeholder="email@ejemplo.com" class="form-input">
+      </div>
+      <div class="form-group">
+        <label>{{ editingPartner ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña' }}</label>
+        <input type="password" [(ngModel)]="partnerForm.password" placeholder="••••••••" class="form-input">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" (click)="closePartnerModal()">Cancelar</button>
+      <button class="btn-primary" (click)="savePartner()">
+        <i class="fas fa-check"></i> {{ editingPartner ? 'Guardar Cambios' : 'Crear Socio' }}
+      </button>
+    </div>
   </div>
 </div>

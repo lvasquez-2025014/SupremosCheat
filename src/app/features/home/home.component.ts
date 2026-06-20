@@ -1,6 +1,7 @@
 import { Component, OnInit, AfterViewInit, ElementRef, ViewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
+import { ApiService } from '@core/services/api.service';
 import { Chart, registerables } from 'chart.js';
 
 Chart.register(...registerables);
@@ -177,6 +178,12 @@ export class HomeComponent implements OnInit, AfterViewInit {
     twoFactor: false,
   };
 
+  showPartnerModal = false;
+  editingPartner: any = null;
+  partnerForm = { name: '', email: '', password: '' };
+  partnerError = '';
+  partnerSuccess = '';
+
   paymentMethods = [
     { name: 'PayPal', icon: 'fab fa-paypal', color: '#003087' },
     { name: 'Criptomonedas (BTC, ETH, USDT)', icon: 'fab fa-bitcoin', color: '#f7931a' },
@@ -186,11 +193,13 @@ export class HomeComponent implements OnInit, AfterViewInit {
 
   constructor(
     private auth: AuthService,
-    private router: Router
+    private router: Router,
+    private api: ApiService
   ) {}
 
   ngOnInit(): void {
     this.user = this.auth.user;
+    this.loadPartners();
   }
 
   ngAfterViewInit(): void {
@@ -231,6 +240,81 @@ export class HomeComponent implements OnInit, AfterViewInit {
     return Math.abs(this.transactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0));
+  }
+
+  loadPartners(): void {
+    this.api.get<any>('admin/users').subscribe({
+      next: (res) => {
+        this.partners = (res.data || []).filter((u: any) => u.role === 'vendedor');
+      },
+      error: () => {}
+    });
+  }
+
+  openPartnerModal(partner?: any): void {
+    this.partnerError = '';
+    this.partnerSuccess = '';
+    if (partner) {
+      this.editingPartner = partner;
+      this.partnerForm = { name: partner.name, email: partner.email, password: '' };
+    } else {
+      this.editingPartner = null;
+      this.partnerForm = { name: '', email: '', password: '' };
+    }
+    this.showPartnerModal = true;
+  }
+
+  closePartnerModal(): void {
+    this.showPartnerModal = false;
+    this.editingPartner = null;
+    this.partnerForm = { name: '', email: '', password: '' };
+    this.partnerError = '';
+    this.partnerSuccess = '';
+  }
+
+  savePartner(): void {
+    this.partnerError = '';
+    const { name, email, password } = this.partnerForm;
+
+    if (!name || !email) {
+      this.partnerError = 'Nombre y email son requeridos';
+      return;
+    }
+
+    if (!this.editingPartner && !password) {
+      this.partnerError = 'La contraseña es requerida';
+      return;
+    }
+
+    if (this.editingPartner) {
+      const body: any = { name, email };
+      if (password) body.password = password;
+      this.api.put<any>(`admin/users/${this.editingPartner._id}`, body).subscribe({
+        next: () => {
+          this.partnerSuccess = 'Socio actualizado';
+          this.loadPartners();
+          setTimeout(() => this.closePartnerModal(), 1200);
+        },
+        error: (err) => this.partnerError = err.error?.message || 'Error al actualizar'
+      });
+    } else {
+      this.api.post<any>('admin/users', { name, email, password, role: 'vendedor' }).subscribe({
+        next: () => {
+          this.partnerSuccess = 'Socio creado';
+          this.loadPartners();
+          setTimeout(() => this.closePartnerModal(), 1200);
+        },
+        error: (err) => this.partnerError = err.error?.message || 'Error al crear socio'
+      });
+    }
+  }
+
+  deletePartner(partner: any): void {
+    if (!confirm(`¿Eliminar a ${partner.name}?`)) return;
+    this.api.delete<any>(`admin/users/${partner._id}`).subscribe({
+      next: () => this.loadPartners(),
+      error: () => {}
+    });
   }
 
   private charts: Chart[] = [];
