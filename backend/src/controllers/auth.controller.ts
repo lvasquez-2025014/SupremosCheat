@@ -1,12 +1,21 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { OAuth2Client } from 'google-auth-library';
 import { UserModel } from '../models/user.model';
 import { config } from '../config';
 import { AuthRequest } from '../middleware/auth.middleware';
 
-const googleClient = new OAuth2Client();
+async function verifyGoogleToken(idToken: string): Promise<{ email: string; name: string; sub: string } | null> {
+  try {
+    const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+    if (!response.ok) return null;
+    const payload: any = await response.json();
+    if (!payload.email || !payload.sub) return null;
+    return { email: payload.email, name: payload.name || '', sub: payload.sub };
+  } catch {
+    return null;
+  }
+}
 
 export async function register(req: AuthRequest, res: Response): Promise<void> {
   try {
@@ -89,11 +98,7 @@ export async function googleLogin(req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    const ticket = await googleClient.verifyIdToken({
-      idToken,
-      audience: config.googleClientId,
-    });
-    const payload = ticket.getPayload();
+    const payload = await verifyGoogleToken(idToken);
 
     if (!payload || !payload.email) {
       res.status(401).json({ message: 'Token de Google inválido' });
