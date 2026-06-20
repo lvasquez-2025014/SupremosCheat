@@ -1,31 +1,22 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import https from 'https';
 import { UserModel } from '../models/user.model';
 import { config } from '../config';
 import { AuthRequest } from '../middleware/auth.middleware';
 
-function verifyGoogleToken(idToken: string): Promise<{ email: string; name: string; sub: string } | null> {
-  return new Promise((resolve) => {
-    https.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`, (res) => {
-      if (res.statusCode !== 200) {
-        resolve(null);
-        return;
-      }
-      let data = '';
-      res.on('data', (chunk) => { data += chunk; });
-      res.on('end', () => {
-        try {
-          const payload = JSON.parse(data);
-          if (!payload.email || !payload.sub) { resolve(null); return; }
-          resolve({ email: payload.email, name: payload.name || '', sub: payload.sub });
-        } catch {
-          resolve(null);
-        }
-      });
-    }).on('error', () => resolve(null));
-  });
+function decodeGoogleToken(idToken: string): { email: string; name: string; sub: string } | null {
+  try {
+    const parts = idToken.split('.');
+    if (parts.length !== 3) return null;
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
+    if (!payload.email || !payload.sub) return null;
+    const expMs = (payload.exp || 0) * 1000;
+    if (Date.now() > expMs) return null;
+    return { email: payload.email, name: payload.name || '', sub: payload.sub };
+  } catch {
+    return null;
+  }
 }
 
 export async function register(req: AuthRequest, res: Response): Promise<void> {
@@ -109,7 +100,7 @@ export async function googleLogin(req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    const payload = await verifyGoogleToken(idToken);
+    const payload = decodeGoogleToken(idToken);
 
     if (!payload || !payload.email) {
       res.status(401).json({ message: 'Token de Google inválido' });
