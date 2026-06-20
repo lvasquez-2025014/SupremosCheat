@@ -337,7 +337,7 @@
             <p>Vendedores afiliados al panel</p>
           </div>
           <button class="btn-primary" *ngIf="user?.role === 'admin'" (click)="openPartnerModal()">
-            <i class="fas fa-plus"></i> Invitar Socio
+            <i class="fas fa-plus"></i> Agregar Socio
           </button>
         </div>
 
@@ -616,7 +616,7 @@
 <div class="modal-overlay" *ngIf="showPartnerModal" (click)="closePartnerModal()">
   <div class="modal-content card" (click)="$event.stopPropagation()">
     <div class="modal-header">
-      <h2>{{ editingPartner ? 'Editar Socio' : 'Invitar Socio' }}</h2>
+      <h2>{{ editingPartner ? 'Editar Socio' : 'Agregar Socio' }}</h2>
       <button class="btn-icon" (click)="closePartnerModal()"><i class="fas fa-times"></i></button>
     </div>
     <div class="modal-body">
