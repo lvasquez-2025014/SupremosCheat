@@ -732,11 +732,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     fd.append('badge', this.productForm.badge);
     fd.append('badgeType', this.productForm.badgeType);
     fd.append('icon', this.productForm.icon);
-    if (this.productForm.image && !this.productImageFile) {
-      fd.append('image', this.productForm.image);
-    }
     if (this.productImageFile) {
       fd.append('imageFile', this.productImageFile);
+    } else if (!this.editingProduct && this.productForm.image) {
+      fd.append('image', this.productForm.image);
     }
 
     const req = this.editingProduct

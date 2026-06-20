@@ -37,7 +37,7 @@ export class Product extends TimeStamps {
   @prop({ trim: true, default: 'fas fa-box' })
   icon!: string;
 
-  @prop({ trim: true, default: '' })
+  @prop({ default: '' })
   image!: string;
 
   @prop({ default: 0 })
