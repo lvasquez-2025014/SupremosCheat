@@ -996,7 +996,12 @@
       </div>
       <div class="form-group">
         <label>{{ editingPartner ? 'Nueva contraseña (dejar vacío para no cambiar)' : 'Contraseña' }}</label>
-        <input type="password" [(ngModel)]="partnerForm.password" placeholder="••••••••" class="form-input">
+        <div style="position: relative;">
+          <input [type]="showPartnerPass ? 'text' : 'password'" [(ngModel)]="partnerForm.password" placeholder="••••••••" class="form-input" style="padding-right: 40px;">
+          <button type="button" (click)="showPartnerPass = !showPartnerPass" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #888; cursor: pointer; font-size: 14px;">
+            <i [class]="showPartnerPass ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
       </div>
     </div>
     <div class="modal-footer">

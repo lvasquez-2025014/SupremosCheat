@@ -214,6 +214,7 @@ export class HomeComponent implements OnInit, AfterViewInit {
   partnerForm = { name: '', email: '', password: '' };
   partnerError = '';
   partnerSuccess = '';
+  showPartnerPass = false;
 
   get isGuest(): boolean {
     return !this.auth.isLoggedIn;
@@ -488,7 +489,10 @@ export class HomeComponent implements OnInit, AfterViewInit {
           this.loadPartners();
           setTimeout(() => this.closePartnerModal(), 1200);
         },
-        error: (err) => this.partnerError = err.error?.message || 'Error al crear socio'
+        error: (err) => {
+          const msg = err.error?.message || err.message || 'Error al crear socio';
+          this.partnerError = msg;
+        }
       });
     }
   }
