@@ -1,20 +1,31 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import https from 'https';
 import { UserModel } from '../models/user.model';
 import { config } from '../config';
 import { AuthRequest } from '../middleware/auth.middleware';
 
-async function verifyGoogleToken(idToken: string): Promise<{ email: string; name: string; sub: string } | null> {
-  try {
-    const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
-    if (!response.ok) return null;
-    const payload: any = await response.json();
-    if (!payload.email || !payload.sub) return null;
-    return { email: payload.email, name: payload.name || '', sub: payload.sub };
-  } catch {
-    return null;
-  }
+function verifyGoogleToken(idToken: string): Promise<{ email: string; name: string; sub: string } | null> {
+  return new Promise((resolve) => {
+    https.get(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`, (res) => {
+      if (res.statusCode !== 200) {
+        resolve(null);
+        return;
+      }
+      let data = '';
+      res.on('data', (chunk) => { data += chunk; });
+      res.on('end', () => {
+        try {
+          const payload = JSON.parse(data);
+          if (!payload.email || !payload.sub) { resolve(null); return; }
+          resolve({ email: payload.email, name: payload.name || '', sub: payload.sub });
+        } catch {
+          resolve(null);
+        }
+      });
+    }).on('error', () => resolve(null));
+  });
 }
 
 export async function register(req: AuthRequest, res: Response): Promise<void> {

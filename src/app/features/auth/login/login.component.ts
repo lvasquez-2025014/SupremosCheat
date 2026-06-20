@@ -67,7 +67,7 @@ export class LoginComponent implements OnInit {
         if (err.code === 'auth/popup-closed-by-user') {
           this.loginError = '';
         } else {
-          this.loginError = 'Error al iniciar sesión con Google';
+          this.loginError = err?.error?.message || err?.message || 'Error al iniciar sesión con Google';
         }
         this.googleLoading = false;
       });
@@ -84,7 +84,7 @@ export class LoginComponent implements OnInit {
         if (err.code === 'auth/popup-closed-by-user') {
           this.registerError = '';
         } else {
-          this.registerError = 'Error al registrarse con Google';
+          this.registerError = err?.error?.message || err?.message || 'Error al registrarse con Google';
         }
         this.googleLoading = false;
       });
