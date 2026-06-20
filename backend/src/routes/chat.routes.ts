@@ -30,31 +30,40 @@ router.get('/conversations', authenticate, async (req: AuthRequest, res: Respons
     }).sort({ updatedAt: -1 });
 
     const enriched = await Promise.all(conversations.map(async (conv) => {
-      const lastMsg = await MessageModel.findOne({ conversation: conv._id, isDeleted: false })
-        .sort({ createdAt: -1 })
-        .populate('sender', 'name email role');
+      try {
+        const lastMsg = await MessageModel.findOne({ conversation: conv._id, $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }] })
+          .sort({ createdAt: -1 })
+          .populate('sender', 'name email role');
 
-      const memberDetails = await Promise.all(
-        conv.members.map(async (id) => {
-          const user = await UserModel.findById(id).select('name email role');
-          if (!user) return null;
-          const online = onlineUsers.has(id);
-          return { ...user.toObject(), isOnline: online };
-        })
-      );
+        const memberDetails = await Promise.all(
+          conv.members.map(async (id) => {
+            const user = await UserModel.findById(id).select('name email role');
+            if (!user) return null;
+            const online = onlineUsers.has(id);
+            return { ...user.toObject(), isOnline: online };
+          })
+        );
 
-      const unreadCount = await MessageModel.countDocuments({
-        conversation: conv._id,
-        readBy: { $ne: userId },
-        isDeleted: false
-      });
+        const unreadCount = await MessageModel.countDocuments({
+          conversation: conv._id,
+          readBy: { $ne: userId },
+          $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }]
+        });
 
-      return {
-        ...conv.toObject(),
-        lastMessage: lastMsg || null,
-        memberDetails: memberDetails.filter(Boolean),
-        unreadCount
-      };
+        return {
+          ...conv.toObject(),
+          lastMessage: lastMsg ? lastMsg.toObject() : null,
+          memberDetails: memberDetails.filter(Boolean),
+          unreadCount
+        };
+      } catch (innerError: any) {
+        return {
+          ...conv.toObject(),
+          lastMessage: null,
+          memberDetails: [],
+          unreadCount: 0
+        };
+      }
     }));
 
     res.json({ success: true, data: enriched });
@@ -103,12 +112,22 @@ router.post('/conversations', authenticate, async (req: AuthRequest, res: Respon
 router.get('/conversations/:id/messages', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const convId = req.params.id as string;
-    const messages = await MessageModel.find({ conversation: convId, isDeleted: false })
+    const messages = await MessageModel.find({ conversation: convId, $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }] })
       .sort({ createdAt: 1 })
-      .populate('sender', 'name email role')
-      .populate({ path: 'replyTo', populate: { path: 'sender', select: 'name' } });
+      .populate('sender', 'name email role');
 
-    res.json({ success: true, data: messages });
+    const enriched = await Promise.all(messages.map(async (msg) => {
+      const obj: any = msg.toObject();
+      if (msg.replyTo) {
+        try {
+          const replyMsg = await MessageModel.findById(msg.replyTo).populate('sender', 'name');
+          obj.replyTo = replyMsg ? { _id: replyMsg._id, content: replyMsg.content, sender: (replyMsg.sender as any)?.name ? replyMsg.sender : null } : null;
+        } catch { obj.replyTo = null; }
+      }
+      return obj;
+    }));
+
+    res.json({ success: true, data: enriched });
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Error al cargar mensajes' });
   }
@@ -119,13 +138,15 @@ router.post('/conversations/:id/messages', authenticate, async (req: AuthRequest
   try {
     const { content, type, replyToId } = req.body;
     const userId = req.userId!;
+    const convId = req.params.id as string;
+
+    console.log('[CHAT SEND] convId:', convId, 'userId:', userId, 'content:', content, 'type:', type);
 
     if (!content || !content.trim()) {
+      console.log('[CHAT SEND] Empty content');
       res.status(400).json({ message: 'El contenido del mensaje es requerido' });
       return;
     }
-
-    const convId = req.params.id as string;
 
     const msgData: any = {
       sender: new mongoose.Types.ObjectId(userId),
@@ -140,14 +161,13 @@ router.post('/conversations/:id/messages', authenticate, async (req: AuthRequest
     }
 
     const message = await MessageModel.create(msgData);
-    const populated = await MessageModel.findById(message._id)
-      .populate('sender', 'name email role')
-      .populate({ path: 'replyTo', populate: { path: 'sender', select: 'name' } });
+    const populated = await MessageModel.findById(message._id).populate('sender', 'name email role');
 
     await ConversationModel.findByIdAndUpdate(convId, { updatedAt: new Date() });
 
     res.status(201).json({ success: true, data: populated });
   } catch (error: any) {
+    console.error('[CHAT SEND ERROR]', error.message, error.stack);
     res.status(500).json({ message: error.message || 'Error al enviar mensaje' });
   }
 });
@@ -195,8 +215,7 @@ router.post('/messages/:msgId/reactions', authenticate, async (req: AuthRequest,
 
     await message.save();
     const populated = await MessageModel.findById(msgId)
-      .populate('sender', 'name email role')
-      .populate({ path: 'replyTo', populate: { path: 'sender', select: 'name' } });
+      .populate('sender', 'name email role');
 
     res.json({ success: true, data: populated });
   } catch (error: any) {

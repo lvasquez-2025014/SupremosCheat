@@ -55,8 +55,12 @@ export function applySecurity(app: Express): void {
   app.use((_req: Request, res: Response, next: NextFunction) => {
     const originalJson = res.json.bind(res);
     res.json = function (body: any) {
-      if (body && typeof body === 'object') {
-        sanitizeObject(body);
+      try {
+        if (body && typeof body === 'object') {
+          sanitizeObject(body);
+        }
+      } catch (e) {
+        // Skip sanitization if it fails
       }
       return originalJson(body);
     };
@@ -137,8 +141,12 @@ export function applySecurity(app: Express): void {
   });
 }
 
-function sanitizeObject(obj: any): void {
-  if (!obj || typeof obj !== 'object') return;
+function sanitizeObject(obj: any, depth: number = 0): void {
+  if (!obj || typeof obj !== 'object' || depth > 10) return;
+  if (Array.isArray(obj)) {
+    obj.forEach((item) => sanitizeObject(item, depth + 1));
+    return;
+  }
   for (const key of Object.keys(obj)) {
     if (typeof obj[key] === 'string') {
       obj[key] = obj[key]
@@ -147,8 +155,8 @@ function sanitizeObject(obj: any): void {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#x27;')
         .replace(/\//g, '&#x2F;');
-    } else if (typeof obj[key] === 'object') {
-      sanitizeObject(obj[key]);
+    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
+      sanitizeObject(obj[key], depth + 1);
     }
   }
 }
