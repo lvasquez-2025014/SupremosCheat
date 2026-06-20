@@ -115,6 +115,19 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   partnerSuccess = '';
   showPartnerPass = false;
 
+  showProductModal = false;
+  editingProduct: any = null;
+  productForm: any = {
+    name: '', description: '', category: 'Free Fire PC',
+    prices: [{ duration: '1 Día', price: 0 }],
+    stock: 999, badge: '', badgeType: 'info', icon: 'fas fa-box', image: ''
+  };
+  productImageFile: File | null = null;
+  productImagePreview = '';
+  productError = '';
+  productSuccess = '';
+  productSaving = false;
+
   showPaymentModal = false;
   selectedProduct: any = null;
   selectedPlan: any = null;
@@ -611,6 +624,111 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!confirm(`¿Eliminar a ${partner.name}?`)) return;
     this.api.delete<any>(`admin/users/${partner._id}`).subscribe({
       next: () => this.loadPartners(),
+      error: () => {}
+    });
+  }
+
+  // ============ PRODUCT MODAL ============
+
+  openProductModal(product?: any): void {
+    this.productError = '';
+    this.productSuccess = '';
+    this.productImageFile = null;
+    this.productImagePreview = '';
+    if (product) {
+      this.editingProduct = product;
+      this.productForm = {
+        name: product.name, description: product.description, category: product.category,
+        prices: [...(product.prices || []).map((p: any) => ({ ...p }))],
+        stock: product.stock ?? 999, badge: product.badge || '', badgeType: product.badgeType || 'info',
+        icon: product.icon || 'fas fa-box', image: product.image || ''
+      };
+      this.productImagePreview = product.image || '';
+    } else {
+      this.editingProduct = null;
+      this.productForm = {
+        name: '', description: '', category: 'Free Fire PC',
+        prices: [{ duration: '1 Día', price: 0 }],
+        stock: 999, badge: '', badgeType: 'info', icon: 'fas fa-box', image: ''
+      };
+    }
+    this.showProductModal = true;
+  }
+
+  closeProductModal(): void {
+    this.showProductModal = false;
+    this.editingProduct = null;
+    this.productImageFile = null;
+    this.productImagePreview = '';
+    this.productError = '';
+    this.productSuccess = '';
+  }
+
+  onProductImageSelect(event: any): void {
+    const file = event.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { this.productError = 'Máximo 2MB por imagen'; return; }
+    this.productImageFile = file;
+    const reader = new FileReader();
+    reader.onload = () => { this.productImagePreview = reader.result as string; };
+    reader.readAsDataURL(file);
+  }
+
+  removeProductImage(): void {
+    this.productImageFile = null;
+    this.productImagePreview = '';
+    this.productForm.image = '';
+  }
+
+  addPriceRow(): void {
+    this.productForm.prices.push({ duration: '', price: 0 });
+  }
+
+  removePriceRow(index: number): void {
+    this.productForm.prices.splice(index, 1);
+  }
+
+  saveProduct(): void {
+    this.productError = '';
+    const { name, description, category } = this.productForm;
+    if (!name || !description || !category) { this.productError = 'Nombre, descripción y categoría son requeridos'; return; }
+
+    this.productSaving = true;
+    const fd = new FormData();
+    fd.append('name', name);
+    fd.append('description', description);
+    fd.append('category', category);
+    fd.append('prices', JSON.stringify(this.productForm.prices));
+    fd.append('stock', String(this.productForm.stock));
+    fd.append('badge', this.productForm.badge);
+    fd.append('badgeType', this.productForm.badgeType);
+    fd.append('icon', this.productForm.icon);
+    if (this.productForm.image && !this.productImageFile) {
+      fd.append('image', this.productForm.image);
+    }
+    if (this.productImageFile) {
+      fd.append('imageFile', this.productImageFile);
+    }
+
+    const req = this.editingProduct
+      ? this.api.put<any>(`products/${this.editingProduct._id || this.editingProduct.id}`, fd)
+      : this.api.post<any>('products', fd);
+
+    req.subscribe({
+      next: () => {
+        this.productSuccess = this.editingProduct ? 'Producto actualizado' : 'Producto creado';
+        this.loadProducts();
+        setTimeout(() => this.closeProductModal(), 1200);
+        this.productSaving = false;
+      },
+      error: (err) => { this.productError = err.error?.message || 'Error al guardar producto'; this.productSaving = false; }
+    });
+  }
+
+  deleteProduct(product: any): void {
+    if (!confirm(`¿Eliminar "${product.name}"?`)) return;
+    this.api.delete<any>(`products/${product._id || product.id}`).subscribe({
+      next: () => this.loadProducts(),
       error: () => {}
     });
   }
