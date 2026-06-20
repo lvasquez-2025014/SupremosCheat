@@ -2506,6 +2506,7 @@ $topbar-height: 64px;
   border-radius: 6px;
   margin-bottom: 2px;
   transition: background 0.1s ease;
+  position: relative;
 
   &:hover { background: rgba(255,255,255,0.02); }
   &:hover .discord-msg-actions { opacity: 1; }
