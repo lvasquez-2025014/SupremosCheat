@@ -5,6 +5,8 @@ import { ApiService } from '@core/services/api.service';
 import { ChatService } from '@core/services/chat.service';
 import { Chart, registerables } from 'chart.js';
 
+import { environment } from '@env/environment';
+
 Chart.register(...registerables);
 
 @Component({
@@ -19,6 +21,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('analyticsVisits') analyticsVisitsRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('analyticsSales') analyticsSalesRef!: ElementRef<HTMLCanvasElement>;
   @ViewChild('analyticsConversion') analyticsConversionRef!: ElementRef<HTMLCanvasElement>;
+
+  imageUrl = environment.apiUrl.replace(/\/api\/?$/, '');
 
   activeSection = 'dashboard';
   sidebarCollapsed = false;
@@ -644,7 +648,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         stock: product.stock ?? 999, badge: product.badge || '', badgeType: product.badgeType || 'info',
         icon: product.icon || 'fas fa-box', image: product.image || ''
       };
-      this.productImagePreview = product.image || '';
+      this.productImagePreview = product.image ? (product.image.startsWith('/') ? this.imageUrl + product.image : product.image) : '';
     } else {
       this.editingProduct = null;
       this.productForm = {

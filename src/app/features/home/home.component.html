@@ -43,7 +43,7 @@
       <div class="guest-products-grid">
         <div class="guest-product-card" *ngFor="let product of products">
           <div class="guest-product-image">
-            <img *ngIf="product.image" [src]="product.image" [alt]="product.name" class="guest-product-img" />
+            <img *ngIf="product.image" [src]="imageUrl + product.image" [alt]="product.name" class="guest-product-img" />
             <div *ngIf="!product.image" class="guest-product-img-placeholder">
               <i [class]="product.icon" class="guest-product-icon"></i>
             </div>
@@ -1102,7 +1102,7 @@
           <div class="products-grid">
             <div class="product-card" *ngFor="let product of products">
               <div class="product-card-image">
-                <img *ngIf="product.image" [src]="product.image" [alt]="product.name" class="product-img" />
+              <img *ngIf="product.image" [src]="imageUrl + product.image" [alt]="product.name" class="product-img" />
                 <div *ngIf="!product.image" class="product-img-placeholder">
                   <i [class]="product.icon" class="product-icon-display"></i>
                   <span class="product-img-label">Arrastra o pega tu imagen aqui</span>

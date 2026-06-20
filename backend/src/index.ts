@@ -3,6 +3,7 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 
 import express from 'express';
 import cors from 'cors';
+import path from 'path';
 import { connectDatabase } from './services/database';
 import { config } from './config';
 import { applySecurity } from './middleware/security.middleware';
@@ -49,6 +50,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.set('trust proxy', 1);
 
+app.use('/images', express.static(path.join(__dirname, '../public/images')));
+
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/products', productRoutes);
@@ -82,6 +85,7 @@ async function seedProducts() {
       badge: 'HOT',
       badgeType: 'danger',
       icon: 'fas fa-desktop',
+      image: '/images/panel-pc.png',
     },
     {
       name: 'Bypass APK',

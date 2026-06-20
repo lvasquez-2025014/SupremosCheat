@@ -2,9 +2,23 @@ import { Router, Response } from 'express';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.middleware';
 import { ProductModel } from '../models/product.model';
 import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
+
+const imagesDir = path.join(__dirname, '../../public/images');
+if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, imagesDir),
+  filename: (_req, file, cb) => {
+    const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, unique + ext);
+  }
+});
 
 const upload = multer({
-  storage: multer.memoryStorage(),
+  storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
     if (file.mimetype.startsWith('image/')) cb(null, true);
@@ -33,9 +47,9 @@ router.post('/', authenticate, authorize('admin'), upload.single('imageFile'), a
       return;
     }
 
-    let imageData = image || '';
+    let imagePath = image || '';
     if (req.file) {
-      imageData = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+      imagePath = '/images/' + req.file.filename;
     }
 
     const product = await ProductModel.create({
@@ -47,7 +61,7 @@ router.post('/', authenticate, authorize('admin'), upload.single('imageFile'), a
       badge: badge || '',
       badgeType: badgeType || 'info',
       icon: icon || 'fas fa-box',
-      image: imageData,
+      image: imagePath,
     });
 
     res.status(201).json({ success: true, data: product });
@@ -72,8 +86,8 @@ router.put('/:id', authenticate, authorize('admin', 'vendedor'), upload.single('
     if (icon !== undefined) update.icon = icon;
 
     if (req.file) {
-      update.image = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
-    } else if (image !== undefined) {
+      update.image = '/images/' + req.file.filename;
+    } else if (image !== undefined && image !== '') {
       update.image = image;
     }
 
@@ -96,6 +110,14 @@ router.delete('/:id', authenticate, authorize('admin'), async (req: AuthRequest,
     return;
   }
   res.json({ success: true, message: 'Producto eliminado' });
+});
+
+router.post('/fix-images', authenticate, authorize('admin'), async (_req: AuthRequest, res: Response) => {
+  const result = await ProductModel.updateMany(
+    { image: { $regex: /^data:image/ } },
+    { $set: { image: '' } }
+  );
+  res.json({ success: true, message: `Corregidos ${result.modifiedCount} productos`, data: { modified: result.modifiedCount } });
 });
 
 export default router;
