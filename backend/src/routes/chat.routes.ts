@@ -1,6 +1,8 @@
 import { Router, Response } from 'express';
 import mongoose from 'mongoose';
+import jwt from 'jsonwebtoken';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.middleware';
+import { config } from '../config';
 import { MessageModel, ConversationModel } from '../models/message.model';
 import { UserModel } from '../models/user.model';
 import { NotificationModel } from '../models/notification.model';
@@ -269,11 +271,13 @@ router.get('/users', authenticate, async (_req: AuthRequest, res: Response) => {
   }
 });
 
-// Heartbeat - user is alive
+// Heartbeat - user is alive, returns fresh token
 router.post('/heartbeat', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    setOnline(req.userId!);
-    res.json({ success: true });
+    const userId = req.userId!;
+    setOnline(userId);
+    const newToken = jwt.sign({ id: userId }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+    res.json({ success: true, token: newToken });
   } catch (error: any) {
     res.status(500).json({ message: error.message || 'Error' });
   }

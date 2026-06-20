@@ -171,10 +171,17 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.loadPartners();
     }
 
-    // Heartbeat every 30s
+    // Heartbeat every 30s - refreshes token to keep session alive
     this.heartbeatInterval = setInterval(() => {
       if (this.auth.isLoggedIn) {
-        this.chatService.sendHeartbeat().subscribe();
+        this.chatService.sendHeartbeat().subscribe({
+          next: (res) => {
+            if (res.token) {
+              localStorage.setItem('token', res.token);
+            }
+          },
+          error: () => {}
+        });
       }
     }, 30000);
 
