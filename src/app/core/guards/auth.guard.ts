@@ -7,7 +7,21 @@ export class AuthGuard implements CanActivate {
 
   canActivate(): boolean | UrlTree {
     const token = localStorage.getItem('token');
-    if (token) return true;
-    return this.router.parseUrl('/auth/login');
+    if (!token) return this.router.parseUrl('/auth/login');
+
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      const expiresAt = payload.exp * 1000;
+      if (Date.now() >= expiresAt) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        return this.router.parseUrl('/auth/login');
+      }
+      return true;
+    } catch {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      return this.router.parseUrl('/auth/login');
+    }
   }
 }

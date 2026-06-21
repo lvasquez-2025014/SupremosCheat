@@ -5,14 +5,23 @@ import hpp from 'hpp';
 import { Express, Request, Response, NextFunction } from 'express';
 
 export function applySecurity(app: Express): void {
-  // Helmet - security headers
   app.use(helmet({
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", "https://cdn.tailwindcss.com"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "https://cdnjs.cloudflare.com"],
+        imgSrc: ["'self'", "data:", "https:"],
+        connectSrc: ["'self'"],
+        frameSrc: ["'none'"],
+        objectSrc: ["'none'"],
+      },
+    },
     crossOriginEmbedderPolicy: false,
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   }));
 
-  // Rate limiting general - 100 requests per 15 minutes per IP
   app.use(rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 100,
@@ -21,7 +30,6 @@ export function applySecurity(app: Express): void {
     legacyHeaders: false,
   }));
 
-  // Aggressive rate limit for auth routes - 10 attempts per 15 minutes
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 10,
@@ -33,7 +41,6 @@ export function applySecurity(app: Express): void {
   app.use('/api/auth/register', authLimiter);
   app.use('/api/auth/google', authLimiter);
 
-  // Strict rate limit for admin routes - 60 per minute
   const adminLimiter = rateLimit({
     windowMs: 60 * 1000,
     max: 60,
@@ -43,31 +50,12 @@ export function applySecurity(app: Express): void {
   });
   app.use('/api/admin', adminLimiter);
 
-  // MongoDB injection sanitization - remove $ and . from req.body, req.query, req.params
   app.use(mongoSanitize({
     replaceWith: '_',
   }));
 
-  // Prevent HTTP parameter pollution
   app.use(hpp());
 
-  // XSS protection - sanitize input
-  app.use((_req: Request, res: Response, next: NextFunction) => {
-    const originalJson = res.json.bind(res);
-    res.json = function (body: any) {
-      try {
-        if (body && typeof body === 'object') {
-          sanitizeObject(body);
-        }
-      } catch (e) {
-        // Skip sanitization if it fails
-      }
-      return originalJson(body);
-    };
-    next();
-  });
-
-  // Security headers
   app.use((_req: Request, res: Response, next: NextFunction) => {
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('X-Frame-Options', 'DENY');
@@ -78,7 +66,6 @@ export function applySecurity(app: Express): void {
     next();
   });
 
-  // Block suspicious request patterns
   app.use((req: Request, res: Response, next: NextFunction) => {
     const blocked = [
       /(\.\.\/)/,
@@ -103,60 +90,10 @@ export function applySecurity(app: Express): void {
 
     for (const pattern of blocked) {
       if (pattern.test(url) || pattern.test(bodyStr)) {
-        console.log(`[SECURITY BLOCKED] ${req.method} ${req.originalUrl} from ${req.ip}`);
-        res.status(403).json({ message: 'Solicitud bloqueada por seguridad' });
+        res.status(403).json({ message: 'Solicitud bloqueada' });
         return;
       }
     }
     next();
   });
-
-  // Log suspicious activity
-  app.use((req: Request, res: Response, next: NextFunction) => {
-    const suspicious = [
-      /sqlmap/i,
-      /nikto/i,
-      /nessus/i,
-      /burp/i,
-      /owasp/i,
-      /acunetix/i,
-      /havij/i,
-      /w3af/i,
-      /masscan/i,
-      /nmap/i,
-      /dirbuster/i,
-      /gobuster/i,
-    ];
-
-    const ua = (req.headers['user-agent'] || '').toLowerCase();
-    for (const pattern of suspicious) {
-      if (pattern.test(ua)) {
-        console.log(`[SECURITY ALERT] Suspicious user-agent detected: ${req.headers['user-agent']} from ${req.ip}`);
-        res.status(403).json({ message: 'Acceso denegado' });
-        return;
-      }
-    }
-
-    next();
-  });
-}
-
-function sanitizeObject(obj: any, depth: number = 0): void {
-  if (!obj || typeof obj !== 'object' || depth > 10) return;
-  if (Array.isArray(obj)) {
-    obj.forEach((item) => sanitizeObject(item, depth + 1));
-    return;
-  }
-  for (const key of Object.keys(obj)) {
-    if (typeof obj[key] === 'string') {
-      obj[key] = obj[key]
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#x27;')
-        .replace(/\//g, '&#x2F;');
-    } else if (typeof obj[key] === 'object' && obj[key] !== null) {
-      sanitizeObject(obj[key], depth + 1);
-    }
-  }
 }

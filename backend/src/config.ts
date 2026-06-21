@@ -1,7 +1,16 @@
+if (!process.env.MONGO_URI) {
+  console.error('[FATAL] MONGO_URI environment variable is required');
+  process.exit(1);
+}
+if (!process.env.JWT_SECRET) {
+  console.error('[FATAL] JWT_SECRET environment variable is required');
+  process.exit(1);
+}
+
 export const config = {
   port: process.env.PORT || 3000,
-  mongoUri: process.env.MONGO_URI || 'mongodb+srv://ludwingivanvasqueznavas_db_user:hVyc9ZTzbazjMq9i@cluster0.bswryim.mongodb.net/pagina?appName=Cluster0',
-  jwtSecret: process.env.JWT_SECRET || 'pagina_secret_key_change_in_production',
+  mongoUri: process.env.MONGO_URI,
+  jwtSecret: process.env.JWT_SECRET,
   jwtExpiresIn: 86400,
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
   firebase: {

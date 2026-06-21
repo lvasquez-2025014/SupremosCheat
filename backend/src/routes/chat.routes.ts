@@ -9,18 +9,18 @@ import { NotificationModel } from '../models/notification.model';
 
 const router = Router();
 
-// In-memory online status tracking
-const onlineUsers = new Map<string, { lastSeen: Date; socketId?: string }>();
+const onlineUsers = new Map<string, { lastSeen: Date }>();
 
 function setOnline(userId: string) {
   onlineUsers.set(userId, { lastSeen: new Date() });
 }
 
-function setOffline(userId: string) {
-  onlineUsers.delete(userId);
+async function isMemberOfConversation(convId: string, userId: string): Promise<boolean> {
+  const conv = await ConversationModel.findById(convId).select('members');
+  if (!conv) return false;
+  return conv.members.some((m: any) => m.toString() === userId);
 }
 
-// Get all conversations for current user (enriched)
 router.get('/conversations', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
@@ -58,7 +58,7 @@ router.get('/conversations', authenticate, async (req: AuthRequest, res: Respons
           memberDetails: memberDetails.filter(Boolean),
           unreadCount
         };
-      } catch (innerError: any) {
+      } catch {
         return {
           ...conv.toObject(),
           lastMessage: null,
@@ -69,12 +69,11 @@ router.get('/conversations', authenticate, async (req: AuthRequest, res: Respons
     }));
 
     res.json({ success: true, data: enriched });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error al cargar conversaciones' });
+  } catch {
+    res.status(500).json({ message: 'Error al cargar conversaciones' });
   }
 });
 
-// Create or get a direct conversation
 router.post('/conversations', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { participantId } = req.body;
@@ -82,6 +81,11 @@ router.post('/conversations', authenticate, async (req: AuthRequest, res: Respon
 
     if (!participantId) {
       res.status(400).json({ message: 'ParticipantId requerido' });
+      return;
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(participantId)) {
+      res.status(400).json({ message: 'ID de participante inválido' });
       return;
     }
 
@@ -105,15 +109,26 @@ router.post('/conversations', authenticate, async (req: AuthRequest, res: Respon
     });
 
     res.status(201).json({ success: true, data: conversation });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error al crear conversación' });
+  } catch {
+    res.status(500).json({ message: 'Error al crear conversación' });
   }
 });
 
-// Get messages for a conversation
 router.get('/conversations/:id/messages', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const convId = req.params.id as string;
+    const userId = req.userId!;
+
+    if (!mongoose.Types.ObjectId.isValid(convId)) {
+      res.status(400).json({ message: 'ID de conversación inválido' });
+      return;
+    }
+
+    if (!await isMemberOfConversation(convId, userId)) {
+      res.status(403).json({ message: 'No tienes acceso a esta conversación' });
+      return;
+    }
+
     const messages = await MessageModel.find({ conversation: convId, $or: [{ isDeleted: false }, { isDeleted: { $exists: false } }] })
       .sort({ createdAt: 1 })
       .populate('sender', 'name email role');
@@ -130,23 +145,40 @@ router.get('/conversations/:id/messages', authenticate, async (req: AuthRequest,
     }));
 
     res.json({ success: true, data: enriched });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error al cargar mensajes' });
+  } catch {
+    res.status(500).json({ message: 'Error al cargar mensajes' });
   }
 });
 
-// Send a message
 router.post('/conversations/:id/messages', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { content, type, replyToId } = req.body;
     const userId = req.userId!;
     const convId = req.params.id as string;
 
-    console.log('[CHAT SEND] convId:', convId, 'userId:', userId, 'content:', content, 'type:', type);
+    if (!mongoose.Types.ObjectId.isValid(convId)) {
+      res.status(400).json({ message: 'ID de conversación inválido' });
+      return;
+    }
+
+    if (!await isMemberOfConversation(convId, userId)) {
+      res.status(403).json({ message: 'No tienes acceso a esta conversación' });
+      return;
+    }
 
     if (!content || !content.trim()) {
-      console.log('[CHAT SEND] Empty content');
       res.status(400).json({ message: 'El contenido del mensaje es requerido' });
+      return;
+    }
+
+    if (content.length > 5000) {
+      res.status(400).json({ message: 'El mensaje no puede exceder 5000 caracteres' });
+      return;
+    }
+
+    const allowedTypes = ['text', 'image', 'system'];
+    if (type && !allowedTypes.includes(type)) {
+      res.status(400).json({ message: 'Tipo de mensaje inválido' });
       return;
     }
 
@@ -158,7 +190,7 @@ router.post('/conversations/:id/messages', authenticate, async (req: AuthRequest
       readBy: [userId],
     };
 
-    if (replyToId) {
+    if (replyToId && mongoose.Types.ObjectId.isValid(replyToId)) {
       msgData.replyTo = new mongoose.Types.ObjectId(replyToId);
     }
 
@@ -168,38 +200,62 @@ router.post('/conversations/:id/messages', authenticate, async (req: AuthRequest
     await ConversationModel.findByIdAndUpdate(convId, { updatedAt: new Date() });
 
     res.status(201).json({ success: true, data: populated });
-  } catch (error: any) {
-    console.error('[CHAT SEND ERROR]', error.message, error.stack);
-    res.status(500).json({ message: error.message || 'Error al enviar mensaje' });
+  } catch {
+    res.status(500).json({ message: 'Error al enviar mensaje' });
   }
 });
 
-// Delete a message
 router.delete('/conversations/:convId/messages/:msgId', authenticate, async (req: AuthRequest, res: Response) => {
   try {
-    const { msgId } = req.params;
-    await MessageModel.findByIdAndUpdate(msgId, { isDeleted: true });
-    res.json({ success: true });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error al eliminar mensaje' });
-  }
-});
-
-// Add reaction to message
-router.post('/messages/:msgId/reactions', authenticate, async (req: AuthRequest, res: Response) => {
-  try {
-    const { msgId } = req.params;
-    const { emoji } = req.body;
+    const { msgId, convId } = req.params as { msgId: string; convId: string };
     const userId = req.userId!;
 
-    if (!emoji) {
-      res.status(400).json({ message: 'Emoji requerido' });
+    if (!await isMemberOfConversation(convId, userId)) {
+      res.status(403).json({ message: 'No tienes acceso a esta conversación' });
       return;
     }
 
     const message = await MessageModel.findById(msgId);
     if (!message) {
       res.status(404).json({ message: 'Mensaje no encontrado' });
+      return;
+    }
+
+    const user = await UserModel.findById(userId).select('role');
+    const isSender = message.sender.toString() === userId;
+    const isAdmin = user?.role === 'admin';
+
+    if (!isSender && !isAdmin) {
+      res.status(403).json({ message: 'No puedes eliminar mensajes ajenos' });
+      return;
+    }
+
+    await MessageModel.findByIdAndUpdate(msgId, { isDeleted: true });
+    res.json({ success: true });
+  } catch {
+    res.status(500).json({ message: 'Error al eliminar mensaje' });
+  }
+});
+
+router.post('/messages/:msgId/reactions', authenticate, async (req: AuthRequest, res: Response) => {
+  try {
+    const { msgId } = req.params;
+    const { emoji } = req.body;
+    const userId = req.userId!;
+
+    if (!emoji || typeof emoji !== 'string' || emoji.length > 10) {
+      res.status(400).json({ message: 'Emoji inválido' });
+      return;
+    }
+
+    const message = await MessageModel.findById(msgId);
+    if (!message) {
+      res.status(404).json({ message: 'Mensaje no encontrado' });
+      return;
+    }
+
+    if (!await isMemberOfConversation(message.conversation.toString(), userId)) {
+      res.status(403).json({ message: 'No tienes acceso a esta conversación' });
       return;
     }
 
@@ -220,44 +276,61 @@ router.post('/messages/:msgId/reactions', authenticate, async (req: AuthRequest,
       .populate('sender', 'name email role');
 
     res.json({ success: true, data: populated });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error al reaccionar' });
+  } catch {
+    res.status(500).json({ message: 'Error al reaccionar' });
   }
 });
 
-// Toggle pin message
 router.put('/messages/:msgId/pin', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const { msgId } = req.params;
+    const userId = req.userId!;
+
     const msg = await MessageModel.findById(msgId);
     if (!msg) {
       res.status(404).json({ message: 'Mensaje no encontrado' });
       return;
     }
+
+    if (!await isMemberOfConversation(msg.conversation.toString(), userId)) {
+      res.status(403).json({ message: 'No tienes acceso a esta conversación' });
+      return;
+    }
+
+    const user = await UserModel.findById(userId).select('role');
+    if (user?.role !== 'admin') {
+      res.status(403).json({ message: 'Solo los administradores pueden fijar mensajes' });
+      return;
+    }
+
     msg.isPinned = !msg.isPinned;
     await msg.save();
     res.json({ success: true, data: { isPinned: msg.isPinned } });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error' });
+  } catch {
+    res.status(500).json({ message: 'Error' });
   }
 });
 
-// Mark messages as read
 router.put('/conversations/:id/read', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
     const convId = req.params.id as string;
+
+    if (!await isMemberOfConversation(convId, userId)) {
+      res.status(403).json({ message: 'No tienes acceso a esta conversación' });
+      return;
+    }
+
     await MessageModel.updateMany(
       { conversation: convId, readBy: { $ne: userId } },
       { $push: { readBy: userId } }
     );
     res.json({ success: true, message: 'Mensajes marcados como leídos' });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error' });
+  } catch {
+    res.status(500).json({ message: 'Error' });
   }
 });
 
-// Get all users (for starting new conversations)
 router.get('/users', authenticate, async (_req: AuthRequest, res: Response) => {
   try {
     const users = await UserModel.find({ isActive: true }).select('name email role');
@@ -266,34 +339,30 @@ router.get('/users', authenticate, async (_req: AuthRequest, res: Response) => {
       isOnline: onlineUsers.has(u._id.toString())
     }));
     res.json({ success: true, data: enriched });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error' });
+  } catch {
+    res.status(500).json({ message: 'Error' });
   }
 });
 
-// Heartbeat - user is alive, returns fresh token
 router.post('/heartbeat', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
     setOnline(userId);
     const newToken = jwt.sign({ id: userId }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
     res.json({ success: true, token: newToken });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error' });
+  } catch {
+    res.status(500).json({ message: 'Error' });
   }
 });
 
-// Get online users
 router.get('/online', authenticate, async (_req: AuthRequest, res: Response) => {
   try {
     const ids = Array.from(onlineUsers.keys());
     res.json({ success: true, data: ids });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error' });
+  } catch {
+    res.status(500).json({ message: 'Error' });
   }
 });
-
-// ============ NOTIFICATIONS ============
 
 router.get('/notifications', authenticate, async (req: AuthRequest, res: Response) => {
   try {
@@ -309,18 +378,18 @@ router.get('/notifications', authenticate, async (req: AuthRequest, res: Respons
     }).sort({ createdAt: -1 }).limit(50);
 
     res.json({ success: true, data: notifications });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error' });
+  } catch {
+    res.status(500).json({ message: 'Error' });
   }
 });
 
 router.put('/notifications/:id/read', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const notifId = req.params.id as string;
-    await NotificationModel.findByIdAndUpdate(notifId, { isRead: true });
+    await NotificationModel.findOneAndUpdate({ _id: notifId, user: req.userId }, { isRead: true });
     res.json({ success: true });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error' });
+  } catch {
+    res.status(500).json({ message: 'Error' });
   }
 });
 
@@ -331,8 +400,8 @@ router.put('/notifications/read-all', authenticate, async (req: AuthRequest, res
       { isRead: true }
     );
     res.json({ success: true });
-  } catch (error: any) {
-    res.status(500).json({ message: error.message || 'Error' });
+  } catch {
+    res.status(500).json({ message: 'Error' });
   }
 });
 

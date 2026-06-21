@@ -1,35 +1,42 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import { OAuth2Client } from 'google-auth-library';
 import { UserModel } from '../models/user.model';
 import { config } from '../config';
 import { AuthRequest } from '../middleware/auth.middleware';
 
-function decodeGoogleToken(idToken: string): { email: string; name: string; sub: string } | null {
+const googleClient = new OAuth2Client(config.googleClientId);
+
+async function verifyGoogleToken(idToken: string): Promise<{ email: string; name: string; sub: string } | null> {
   try {
-    const parts = idToken.split('.');
-    if (parts.length !== 3) return null;
-    const payload = JSON.parse(Buffer.from(parts[1], 'base64url').toString());
-    if (!payload.email || !payload.sub) return null;
-    const expMs = (payload.exp || 0) * 1000;
-    if (Date.now() > expMs) return null;
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: config.googleClientId,
+    });
+    const payload = ticket.getPayload();
+    if (!payload || !payload.email || !payload.sub) return null;
     return { email: payload.email, name: payload.name || '', sub: payload.sub };
   } catch {
     return null;
   }
 }
 
+function escapeRegex(str: string): string {
+  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 export async function register(req: AuthRequest, res: Response): Promise<void> {
   try {
     const { name, email, password } = req.body;
 
-    const exists = await UserModel.findOne({ email });
+    const exists = await UserModel.findOne({ email: email.toLowerCase() });
     if (exists) {
       res.status(400).json({ message: 'El email ya está registrado' });
       return;
     }
 
-    const user = await UserModel.create({ name, email, password });
+    const user = await UserModel.create({ name, email: email.toLowerCase(), password });
     const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
 
     res.status(201).json({
@@ -53,10 +60,13 @@ export async function login(req: AuthRequest, res: Response): Promise<void> {
       return;
     }
 
+    const safeEmail = email.toLowerCase().trim();
+    const escaped = escapeRegex(safeEmail);
+
     const user = await UserModel.findOne({
       $or: [
-        { email: { $regex: new RegExp(`^${email}$`, 'i') } },
-        { name: { $regex: new RegExp(`^${email}$`, 'i') } },
+        { email: { $regex: new RegExp(`^${escaped}$`, 'i') } },
+        { name: { $regex: new RegExp(`^${escaped}$`, 'i') } },
       ],
     });
     if (!user) {
@@ -109,7 +119,7 @@ export async function googleLogin(req: AuthRequest, res: Response): Promise<void
       return;
     }
 
-    const payload = decodeGoogleToken(idToken);
+    const payload = await verifyGoogleToken(idToken);
 
     if (!payload || !payload.email) {
       res.status(401).json({ message: 'Token de Google inválido' });
@@ -138,8 +148,7 @@ export async function googleLogin(req: AuthRequest, res: Response): Promise<void
         user: { id: user.id, name: user.name, email: user.email, role: user.role },
       },
     });
-  } catch (error: any) {
-    console.error('[Google Auth Error]', error.message);
+  } catch (error) {
     res.status(500).json({ message: 'Error al autenticar con Google' });
   }
 }
