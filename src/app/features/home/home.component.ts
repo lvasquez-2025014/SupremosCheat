@@ -61,6 +61,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     { name: 'Pedidos', icon: 'fas fa-shopping-cart', section: 'pedidos' },
     { name: 'Ganancias', icon: 'fas fa-wallet', section: 'ganancias' },
     { name: 'Socios', icon: 'fas fa-handshake', section: 'socios' },
+    { name: 'Clientes', icon: 'fas fa-users', section: 'clientes' },
     { name: 'Analíticas', icon: 'fas fa-chart-line', section: 'analytics' },
     { name: 'Chat en vivo', icon: 'fas fa-comments', section: 'chat' },
     { name: 'Notificaciones', icon: 'fas fa-bell', section: 'notificaciones', badge: 0 },
@@ -85,6 +86,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   orders: any[] = [];
   transactions: any[] = [];
   partners: any[] = [];
+  clientes: any[] = [];
 
   notifications = [
     { id: 1, title: 'Bienvenido a Supremo Cheats', message: 'Tu panel de control está listo para usar', time: 'Ahora', read: false, icon: 'fas fa-info-circle', color: 'cyan' }
@@ -189,6 +191,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.loadNotifications();
     if (!this.isClient) {
       this.loadPartners();
+      this.loadClientes();
     }
 
     // Heartbeat every 30s - refreshes token to keep session alive
@@ -263,7 +266,14 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   loadPartners(): void {
     this.api.get<any>('admin/users').subscribe({
-      next: (res) => { this.partners = (res.data || []).filter((u: any) => u._id !== this.user?.id); },
+      next: (res) => { this.partners = (res.data || []).filter((u: any) => u._id !== this.user?.id && u.role !== 'cliente'); },
+      error: () => {}
+    });
+  }
+
+  loadClientes(): void {
+    this.api.get<any>('admin/users').subscribe({
+      next: (res) => { this.clientes = (res.data || []).filter((u: any) => u.role === 'cliente'); },
       error: () => {}
     });
   }

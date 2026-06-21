@@ -812,6 +812,44 @@
         </div>
       </section>
 
+      <!-- ==================== CLIENTES ==================== -->
+      <section *ngIf="isAdmin && activeSection === 'clientes'" class="section-content">
+        <div class="section-header">
+          <div>
+            <h1>Clientes</h1>
+            <p>Usuarios registrados en el panel</p>
+          </div>
+        </div>
+
+        <div class="empty-state" *ngIf="clientes.length === 0">
+          <i class="fas fa-users empty-icon"></i>
+          <h3>Sin clientes registrados</h3>
+          <p>Los clientes aparecerán aquí cuando se registren</p>
+        </div>
+
+        <div class="partners-grid" *ngIf="clientes.length > 0">
+          <div class="card partner-card" *ngFor="let c of clientes">
+            <div class="partner-header">
+              <div class="partner-avatar" style="background: linear-gradient(135deg, #84cc16, #22c55e);">
+                {{ getInitials(c.name) }}
+              </div>
+              <select class="role-select" [ngModel]="c.role" (ngModelChange)="changeRole(c, $event)" style="color: #84cc16;">
+                <option value="admin">Admin</option>
+                <option value="vendedor">Vendedor</option>
+                <option value="cliente">Cliente</option>
+              </select>
+            </div>
+            <h3 class="partner-name">{{ c.name }}</h3>
+            <p style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">{{ c.email }}</p>
+            <div class="partner-actions" *ngIf="user?.role === 'admin'" style="margin-top: 12px; display: flex; gap: 8px;">
+              <button class="btn-sm btn-danger" (click)="deletePartner(c)">
+                <i class="fas fa-trash"></i> Eliminar
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ==================== ANALITICAS ==================== -->
       <section *ngIf="isAdmin && activeSection === 'analytics'" class="section-content">
         <div class="section-header">
