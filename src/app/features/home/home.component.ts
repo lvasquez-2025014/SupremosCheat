@@ -561,10 +561,30 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   refreshMessages(): void {
     if (!this.activeChat) return;
-    this.chatService.getMessages(this.activeChat._id).subscribe({
+    const chatId = this.activeChat._id;
+    const el = document.getElementById('chatMessagesContainer');
+    const wasAtBottom = el ? (el.scrollHeight - el.scrollTop - el.clientHeight) < 60 : false;
+
+    this.chatService.getMessages(chatId).subscribe({
       next: (res) => {
-        if (res.data) {
-          this.chatMessages = res.data;
+        if (!res.data) return;
+        const newMsgs = res.data;
+        if (newMsgs.length === 0) return;
+
+        const existingIds = new Set(this.chatMessages.map((m: any) => m._id));
+        const fresh = newMsgs.filter((m: any) => !existingIds.has(m._id));
+
+        if (fresh.length > 0) {
+          fresh.forEach((m: any) => m._new = true);
+          this.chatMessages = [...this.chatMessages, ...fresh];
+          if (wasAtBottom) {
+            this.scrollToBottom();
+          }
+          setTimeout(() => {
+            fresh.forEach((m: any) => m._new = false);
+          }, 300);
+        } else {
+          this.chatMessages = newMsgs;
         }
       },
       error: () => {}
@@ -769,6 +789,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       const el = document.getElementById('chatMessagesContainer');
       if (el) el.scrollTop = el.scrollHeight;
     }, 50);
+  }
+
+  trackByMsgId(_index: number, msg: any): string {
+    return msg._id;
   }
 
   // ============ CHAT HELPERS ============
