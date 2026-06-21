@@ -1658,6 +1658,31 @@
             <button class="btn-primary btn-sm" (click)="confirmTransfer()"><i class="fas fa-check"></i> Confirmar y Abrir Discord</button>
           </div>
         </div>
+
+        <!-- Binance details -->
+        <div *ngIf="selectedPaymentMethod === 'binance'">
+          <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 12px;">Datos de Binance Pay</p>
+          <div class="bank-details-card">
+            <div class="bank-detail-row">
+              <span class="bank-label">Binance User</span>
+              <span class="bank-value highlight">Zeniht</span>
+            </div>
+            <div class="bank-detail-row">
+              <span class="bank-label">Binance ID</span>
+              <span class="bank-value highlight">544914471</span>
+            </div>
+            <div class="bank-note">
+              <i class="fas fa-info-circle"></i> Envía el pago por Binance Pay y envía el comprobante por Discord
+            </div>
+            <div class="bank-amount">
+              Monto a pagar: <strong>${{ selectedPlan?.price }} USD</strong>
+            </div>
+          </div>
+          <div style="margin-top: 14px; display: flex; gap: 10px;">
+            <button class="btn-outline btn-sm" (click)="selectedPaymentMethod = ''"><i class="fas fa-arrow-left"></i> Volver</button>
+            <button class="btn-primary btn-sm" (click)="confirmBinance()"><i class="fas fa-check"></i> Confirmar y Abrir Discord</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="modal-footer" *ngIf="selectedPlan">

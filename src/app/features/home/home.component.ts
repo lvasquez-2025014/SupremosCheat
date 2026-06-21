@@ -1055,12 +1055,20 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       this.selectedPaymentMethod = 'transferencia';
       return;
     }
+    if (methodId === 'binance') {
+      this.selectedPaymentMethod = 'binance';
+      return;
+    }
     this.processPayment(methodId);
   }
 
   confirmTransfer(): void {
     if (!this.selectedCountry) return;
     this.processPayment('transferencia');
+  }
+
+  confirmBinance(): void {
+    this.processPayment('binance');
   }
 
   processPayment(methodId: string): void {
