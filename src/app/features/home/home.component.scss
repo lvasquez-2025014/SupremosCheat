@@ -2159,6 +2159,18 @@ $topbar-height: 64px;
 
 // ==================== DISCORD-STYLE CHAT ====================
 
+.chat-channels-toggle { display: none; }
+
+.chat-channels-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 199;
+
+  &.active { display: block; }
+}
+
 .discord-chat-section {
   display: flex;
   height: calc(100vh - 56px);
@@ -3371,6 +3383,7 @@ $topbar-height: 64px;
   .form-group label { font-size: 11px; }
 
   // Chat mobile
+  .chat-channels-toggle { display: flex !important; }
   .discord-server-bar { width: 48px; padding: 6px 0; }
   .discord-server-icon { width: 36px; height: 36px; font-size: 14px; }
   .discord-server-divider { width: 24px; }

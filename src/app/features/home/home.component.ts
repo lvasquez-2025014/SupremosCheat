@@ -155,6 +155,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   showEmojiPicker = false;
   onlineUserIds: string[] = [];
   typingUsers: string[] = [];
+  chatChannelsOpen = false;
 
   emojis = ['😀','😂','🔥','💯','❤️','👀','🎮','💎','👑','⚡','🚀','✅','❌','🎯','💪','🙏','😎','🤝','💥','⭐','🏆','🎁','💰','🔑','🛡️','⚔️','🎲','🌟','✨','💫'];
 
@@ -460,6 +461,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   toggleMembers(): void {
     this.membersVisible = !this.membersVisible;
+  }
+
+  toggleChatChannels(): void {
+    this.chatChannelsOpen = !this.chatChannelsOpen;
   }
 
   filterConversations(): void {

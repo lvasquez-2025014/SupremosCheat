@@ -369,7 +369,8 @@
         </div>
 
         <!-- CHANNELS / DMs PANEL -->
-        <div class="discord-channels-panel">
+        <div class="chat-channels-overlay" [class.active]="chatChannelsOpen" (click)="chatChannelsOpen = false"></div>
+        <div class="discord-channels-panel" [class.mobile-open]="chatChannelsOpen">
           <div class="discord-channels-header">
             <h2 class="discord-channels-title">{{ chatView === 'dms' ? 'Mensajes Directos' : 'Supremo Cheats' }}</h2>
             <button *ngIf="chatView === 'dms'" class="discord-icon-btn" (click)="openNewChatModal()" title="Nueva conversacion">
@@ -388,7 +389,7 @@
             <div class="discord-channel-label">MENSAJES DIRECTOS</div>
             <div *ngFor="let conv of chatConversations" class="discord-dm-item"
                  [class.active]="activeChat?._id === conv._id"
-                 (click)="selectConversation(conv)">
+                 (click)="selectConversation(conv); chatChannelsOpen = false">
               <div class="discord-dm-avatar">
                 <div class="discord-avatar-sm" [style.background]="'linear-gradient(135deg, ' + (getOtherMember(conv)?.role === 'admin' ? '#ef4444, #f472b6' : getOtherMember(conv)?.role === 'vendedor' ? '#22d3ee, #3b82f6' : '#84cc16, #22c55e') + ')'">
                   {{ getInitials(getOtherMember(conv)?.name || conv.name) }}
@@ -417,7 +418,7 @@
             <div class="discord-channel-label">CANALES DE TEXTO</div>
             <div *ngFor="let ch of chatChannels" class="discord-channel-item"
                  [class.active]="activeChat?._id === ch._id"
-                 (click)="selectChannel(ch)">
+                 (click)="selectChannel(ch); chatChannelsOpen = false">
               <span class="discord-hash">#</span>
               <span class="discord-channel-name">{{ ch.name }}</span>
               <span class="discord-unread-badge" *ngIf="ch.unreadCount > 0">{{ ch.unreadCount }}</span>
@@ -449,6 +450,9 @@
           <!-- Chat Header -->
           <div class="discord-chat-header" *ngIf="activeChat">
             <div class="discord-chat-header-info">
+              <button class="discord-icon-btn chat-channels-toggle" (click)="toggleChatChannels()">
+                <i class="fas fa-bars"></i>
+              </button>
               <div class="discord-avatar-container" *ngIf="chatView === 'dms'">
                 <div class="discord-avatar-sm" [style.background]="'linear-gradient(135deg, ' + (getOtherMember(activeChat)?.role === 'admin' ? '#ef4444, #f472b6' : getOtherMember(activeChat)?.role === 'vendedor' ? '#22d3ee, #3b82f6' : '#84cc16, #22c55e') + ')'">
                   {{ getInitials(getOtherMember(activeChat)?.name || activeChat.name) }}
