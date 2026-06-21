@@ -801,61 +801,85 @@
 
       <!-- ==================== GANANCIAS ==================== -->
       <section *ngIf="isAdmin && activeSection === 'ganancias'" class="section-content">
-        <div class="section-header">
-          <div>
-            <h1>Ganancias</h1>
-            <p>Resumen de ingresos y gastos</p>
+        <!-- CABECERA -->
+        <div class="ganancias-header">
+          <h1>Ganancias</h1>
+          <p>Resumen de ingresos y gastos</p>
+        </div>
+
+        <!-- KPI CARDS -->
+        <div class="kpi-grid">
+          <!-- Ingresos -->
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon-box green">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14l-7 7m0 0l-7-7m7 7V3"/></svg>
+              </div>
+              <span class="kpi-badge green">+0.00%</span>
+            </div>
+            <p class="kpi-label">Ingresos</p>
+            <p class="kpi-value green">${{ totalRevenue.toFixed(2) }}</p>
+          </div>
+
+          <!-- Gastos -->
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon-box red">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10l7-7m0 0l7 7m-7-7v18"/></svg>
+              </div>
+              <span class="kpi-badge red">+0.00%</span>
+            </div>
+            <p class="kpi-label">Gastos</p>
+            <p class="kpi-value red">${{ totalExpenses.toFixed(2) }}</p>
+          </div>
+
+          <!-- Neto -->
+          <div class="kpi-card">
+            <div class="kpi-top">
+              <div class="kpi-icon-box blue">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l4-4 4 4 4-6 4 4"/><path d="M3 17h18"/></svg>
+              </div>
+              <span class="kpi-badge blue">Estable</span>
+            </div>
+            <p class="kpi-label">Neto</p>
+            <p class="kpi-value cyan">${{ (totalRevenue - totalExpenses).toFixed(2) }}</p>
           </div>
         </div>
 
-        <div class="earnings-summary">
-          <div class="card earnings-card">
-            <div class="earnings-icon green">
-              <i class="fas fa-arrow-down"></i>
+        <!-- BOTTOM SECTION 70/30 -->
+        <div class="earnings-bottom">
+          <!-- Chart -->
+          <div class="earnings-chart-card">
+            <div class="chart-card-header">
+              <div>
+                <h2>Ganancias Semanales</h2>
+                <p>Evolución de ingresos · Últimos 7 días</p>
+              </div>
+              <div class="chart-legend">
+                <span class="legend-item"><span class="legend-dot cyan"></span>Ingresos</span>
+                <span class="legend-item"><span class="legend-dot purple"></span>Gastos</span>
+              </div>
             </div>
-            <div class="earnings-info">
-              <span class="earnings-label">Ingresos</span>
-              <span class="earnings-value green">${{ totalRevenue.toFixed(2) }}</span>
-            </div>
-          </div>
-          <div class="card earnings-card">
-            <div class="earnings-icon red">
-              <i class="fas fa-arrow-up"></i>
-            </div>
-            <div class="earnings-info">
-              <span class="earnings-label">Gastos</span>
-              <span class="earnings-value red">${{ totalExpenses.toFixed(2) }}</span>
-            </div>
-          </div>
-          <div class="card earnings-card">
-            <div class="earnings-icon cyan">
-              <i class="fas fa-chart-line"></i>
-            </div>
-            <div class="earnings-info">
-              <span class="earnings-label">Neto</span>
-              <span class="earnings-value cyan">${{ (totalRevenue - totalExpenses).toFixed(2) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="charts-row">
-          <div class="card chart-card">
-            <div class="card-header">
-              <h3>Ganancias Semanales</h3>
-            </div>
-            <div class="chart-container">
+            <div class="chart-wrapper">
               <canvas #earningsChart></canvas>
             </div>
           </div>
-          <div class="card">
-            <div class="card-header">
-              <h3>Transacciones Recientes</h3>
+
+          <!-- Transacciones -->
+          <div class="earnings-tx-card">
+            <div class="tx-card-header">
+              <h2>Transacciones Recientes</h2>
+              <p>Historial de movimientos</p>
             </div>
-            <div class="empty-state" *ngIf="transactions.length === 0">
-              <i class="fas fa-receipt empty-icon"></i>
-              <h3>Sin transacciones</h3>
-              <p>Las transacciones aparecerán aquí</p>
+
+            <div class="tx-empty" *ngIf="transactions.length === 0">
+              <div class="tx-empty-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              </div>
+              <p class="tx-empty-title">Sin transacciones</p>
+              <p class="tx-empty-desc">Las transacciones aparecerán aquí</p>
             </div>
+
             <div class="transactions-list" *ngIf="transactions.length > 0">
               <div class="transaction-item" *ngFor="let tx of transactions">
                 <div class="transaction-icon" [ngClass]="'transaction-' + tx.color">
