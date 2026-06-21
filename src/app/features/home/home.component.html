@@ -1045,119 +1045,155 @@
 
       <!-- ==================== CONFIGURACIÓN ==================== -->
       <section *ngIf="activeSection === 'config'" class="section-content">
-        <div class="section-header">
+        <div class="cyber-section-header">
+          <div class="cyber-header-icon">
+            <i class="fas fa-cog"></i>
+          </div>
           <div>
-            <h1>Configuración</h1>
-            <p>Ajustes generales del panel</p>
+            <h1 class="cyber-neon-text">Configuración</h1>
+            <p class="cyber-subtitle">Gestiona las preferencias de tu panel</p>
           </div>
         </div>
 
-        <div class="settings-grid">
-          <div class="card settings-card">
-            <div class="card-header">
-              <h3>Información del Panel</h3>
+        <div class="cyber-config-grid">
+          <!-- Información del Panel -->
+          <div class="cyber-config-card">
+            <div class="cyber-card-header">
+              <div class="cyber-header-icon-wrap cyan">
+                <i class="fas fa-info-circle"></i>
+              </div>
+              <div>
+                <h2 class="cyber-card-title">Información del Panel</h2>
+                <p class="cyber-card-subtitle">Datos básicos de tu panel</p>
+              </div>
             </div>
-            <div class="settings-form">
-              <div class="form-group">
-                <label class="form-label">Nombre del Panel</label>
-                <input type="text" class="input-field" [(ngModel)]="settings.storeName" />
+            <div class="cyber-card-body">
+              <div class="cyber-form-group">
+                <label class="cyber-form-label">NOMBRE DEL PANEL</label>
+                <input type="text" class="cyber-input" [(ngModel)]="settings.storeName" />
               </div>
-              <div class="form-group">
-                <label class="form-label">Email de Contacto</label>
-                <input type="email" class="input-field" [(ngModel)]="settings.storeEmail" />
+              <div class="cyber-form-group">
+                <label class="cyber-form-label">EMAIL DE CONTACTO</label>
+                <input type="email" class="cyber-input" [(ngModel)]="settings.storeEmail" />
               </div>
-              <button class="btn-primary">Guardar Cambios</button>
-            </div>
-          </div>
-
-          <div class="card settings-card">
-            <div class="card-header">
-              <h3>Preferencias</h3>
-            </div>
-            <div class="settings-form">
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <span class="toggle-label">Notificaciones Push</span>
-                  <span class="toggle-desc">Recibe alertas en tiempo real</span>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" [(ngModel)]="settings.notifications" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <span class="toggle-label">Alertas por Email</span>
-                  <span class="toggle-desc">Resumen diario de actividad</span>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" [(ngModel)]="settings.emailAlerts" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <span class="toggle-label">Modo Oscuro</span>
-                  <span class="toggle-desc">Tema oscuro de la interfaz</span>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" [(ngModel)]="settings.darkMode" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="toggle-row">
-                <div class="toggle-info">
-                  <span class="toggle-label">Autenticación en 2 Pasos</span>
-                  <span class="toggle-desc">Seguridad adicional para tu cuenta</span>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" [(ngModel)]="settings.twoFactor" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
+              <button class="cyber-save-btn" (click)="showToast('Configuración guardada', 'Los cambios han sido aplicados', 'success')">
+                <i class="fas fa-check"></i> Guardar Cambios
+              </button>
             </div>
           </div>
 
-          <div class="card settings-card">
-            <div class="card-header">
-              <h3>Métodos de Pago</h3>
+          <!-- Preferencias -->
+          <div class="cyber-config-card">
+            <div class="cyber-card-header">
+              <div class="cyber-header-icon-wrap purple">
+                <i class="fas fa-sliders-h"></i>
+              </div>
+              <div>
+                <h2 class="cyber-card-title">Preferencias</h2>
+                <p class="cyber-card-subtitle">Personaliza tu experiencia</p>
+              </div>
             </div>
-            <div class="settings-form">
-              <div class="payment-methods-list">
-                <div class="payment-method-item" *ngFor="let pm of paymentMethods">
-                  <div class="payment-method-icon" [style.color]="pm.color">
-                    <i [class]="pm.icon"></i>
-                  </div>
-                  <span class="payment-method-name">{{ pm.name }}</span>
+            <div class="cyber-card-body">
+              <div class="cyber-toggle-row">
+                <div class="cyber-toggle-info">
+                  <h3 class="cyber-toggle-label">Notificaciones Push</h3>
+                  <p class="cyber-toggle-desc">Recibe alertas en tiempo real</p>
                 </div>
+                <div class="cyber-toggle" [class.active]="settings.notifications" (click)="settings.notifications = !settings.notifications"></div>
+              </div>
+              <div class="cyber-toggle-row">
+                <div class="cyber-toggle-info">
+                  <h3 class="cyber-toggle-label">Alertas por Email</h3>
+                  <p class="cyber-toggle-desc">Resumen diario de actividad</p>
+                </div>
+                <div class="cyber-toggle" [class.active]="settings.emailAlerts" (click)="settings.emailAlerts = !settings.emailAlerts"></div>
+              </div>
+              <div class="cyber-toggle-row">
+                <div class="cyber-toggle-info">
+                  <h3 class="cyber-toggle-label">Modo Oscuro</h3>
+                  <p class="cyber-toggle-desc">Tema oscuro de la interfaz</p>
+                </div>
+                <div class="cyber-toggle active"></div>
+              </div>
+              <div class="cyber-toggle-row">
+                <div class="cyber-toggle-info">
+                  <h3 class="cyber-toggle-label">Autenticación en 2 Pasos</h3>
+                  <p class="cyber-toggle-desc">Seguridad adicional para tu cuenta</p>
+                </div>
+                <div class="cyber-toggle" [class.active]="settings.twoFactor" (click)="settings.twoFactor = !settings.twoFactor"></div>
               </div>
             </div>
           </div>
 
-          <div class="card settings-card">
-            <div class="card-header">
-              <h3>Soporte</h3>
+          <!-- Métodos de Pago -->
+          <div class="cyber-config-card">
+            <div class="cyber-card-header">
+              <div class="cyber-header-icon-wrap green">
+                <i class="fas fa-credit-card"></i>
+              </div>
+              <div>
+                <h2 class="cyber-card-title">Métodos de Pago</h2>
+                <p class="cyber-card-subtitle">Opciones disponibles</p>
+              </div>
             </div>
-            <div class="settings-form">
-              <div class="support-info">
-                <p class="support-text">Para soporte y ayuda, únete a nuestro Discord oficial:</p>
-                <a [href]="discordUrl" target="_blank" class="btn-discord-full">
+            <div class="cyber-card-body">
+              <div class="cyber-payment-card paypal" *ngFor="let pm of paymentMethods">
+                <div class="cyber-payment-icon" [style.background]="pm.color + '20'" [style.color]="pm.color">
+                  <i [class]="pm.icon"></i>
+                </div>
+                <div class="cyber-payment-info">
+                  <h3 class="cyber-payment-name">{{ pm.name }}</h3>
+                  <p class="cyber-payment-desc">{{ pm.description }}</p>
+                </div>
+                <i class="fas fa-chevron-right cyber-payment-arrow"></i>
+              </div>
+            </div>
+          </div>
+
+          <!-- Soporte Discord -->
+          <div class="cyber-config-card">
+            <div class="cyber-card-header">
+              <div class="cyber-header-icon-wrap pink">
+                <i class="fab fa-discord"></i>
+              </div>
+              <div>
+                <h2 class="cyber-card-title">Soporte</h2>
+                <p class="cyber-card-subtitle">Comunidad y ayuda</p>
+              </div>
+            </div>
+            <div class="cyber-card-body">
+              <div class="cyber-discord-box">
+                <div class="cyber-discord-icon-wrap">
+                  <i class="fab fa-discord"></i>
+                </div>
+                <h3 class="cyber-discord-title">Únete a nuestra comunidad</h3>
+                <p class="cyber-discord-text">Obtén ayuda, comparte ideas y conecta con otros usuarios en nuestro servidor oficial de Discord.</p>
+                <a [href]="discordUrl" target="_blank" class="cyber-discord-btn">
                   <i class="fab fa-discord"></i> Unirse al Discord
                 </a>
-                <p class="support-note">Solo Discord para soporte</p>
               </div>
             </div>
           </div>
 
-          <div class="card settings-card full-width">
-            <div class="card-header">
-              <h3>Zona de Peligro</h3>
+          <!-- Zona de Peligro -->
+          <div class="cyber-config-card cyber-danger-card">
+            <div class="cyber-card-header cyber-danger-header">
+              <div class="cyber-header-icon-wrap red">
+                <i class="fas fa-exclamation-triangle"></i>
+              </div>
+              <div>
+                <h2 class="cyber-card-title text-red">Zona de Peligro</h2>
+                <p class="cyber-card-subtitle">Estas acciones son irreversibles</p>
+              </div>
             </div>
-            <div class="settings-form danger-zone">
-              <p class="danger-text">Estas acciones son irreversibles. Asegúrate de entender las consecuencias antes de proceder.</p>
-              <div class="danger-actions">
-                <button class="btn-outline danger">Eliminar Cuenta</button>
-                <button class="btn-outline">Exportar Datos</button>
+            <div class="cyber-card-body">
+              <div class="cyber-danger-actions">
+                <button class="cyber-delete-btn">
+                  <i class="fas fa-trash-alt"></i> Eliminar Cuenta
+                </button>
+                <button class="cyber-export-btn">
+                  <i class="fas fa-download"></i> Exportar Datos
+                </button>
               </div>
             </div>
           </div>
@@ -1166,85 +1202,104 @@
 
       <!-- ==================== MI PERFIL ==================== -->
       <section *ngIf="activeSection === 'mi-perfil'" class="section-content">
-        <div class="section-header">
+        <div class="cyber-section-header">
+          <div class="cyber-header-icon pulse">
+            <i class="fas fa-user"></i>
+          </div>
           <div>
-            <h1>Mi Perfil</h1>
-            <p>Personaliza tu información</p>
+            <h1 class="cyber-neon-text">Mi Perfil</h1>
+            <p class="cyber-subtitle">Gestiona tu información personal y avatar</p>
           </div>
         </div>
 
-        <div class="profile-grid">
-          <div class="card profile-card">
-            <div class="profile-avatar-section">
-              <div class="profile-avatar-large">
+        <div class="cyber-profile-grid">
+          <!-- Avatar card -->
+          <div class="cyber-profile-card cyber-avatar-card">
+            <div class="cyber-corner cyber-corner-tl"></div>
+            <div class="cyber-corner cyber-corner-br"></div>
+            <div class="cyber-particle" style="top: 20%; left: 15%; animation-delay: 0s;"></div>
+            <div class="cyber-particle" style="top: 60%; right: 20%; animation-delay: 2s;"></div>
+            <div class="cyber-particle" style="bottom: 30%; left: 25%; animation-delay: 4s;"></div>
+
+            <div class="cyber-avatar-wrapper">
+              <div class="cyber-avatar-glow"></div>
+              <div class="cyber-avatar-ring"></div>
+              <div class="cyber-avatar-img">
                 <img *ngIf="user?.avatar" [src]="imageUrl + user?.avatar" alt="Avatar" />
                 <div *ngIf="!user?.avatar" class="profile-avatar-placeholder">
                   <i class="fas fa-user"></i>
                 </div>
               </div>
-              <label class="btn-sm btn-primary profile-avatar-btn">
-                <i class="fas fa-camera"></i> Cambiar Foto
-                <input type="file" accept="image/*" (change)="uploadAvatar($event)" hidden />
-              </label>
-              <span class="profile-role-badge" [ngClass]="'role-' + user?.role">{{ user?.role }}</span>
             </div>
 
-            <div class="profile-info-list">
-              <div class="profile-info-item">
-                <i class="fas fa-envelope"></i>
-                <span>{{ user?.email }}</span>
-              </div>
-              <div class="profile-info-item" *ngIf="user?.discord">
-                <i class="fab fa-discord"></i>
-                <span>{{ user?.discord }}</span>
-              </div>
-              <div class="profile-info-item" *ngIf="user?.country">
-                <i class="fas fa-globe"></i>
-                <span>{{ user?.country }}</span>
-              </div>
-              <div class="profile-info-item" *ngIf="user?.phone">
-                <i class="fas fa-phone"></i>
-                <span>{{ user?.phone }}</span>
-              </div>
-              <div class="profile-info-item" *ngIf="user?.bio">
-                <i class="fas fa-quote-left"></i>
-                <span>{{ user?.bio }}</span>
-              </div>
+            <label class="cyber-change-photo-btn">
+              <i class="fas fa-camera"></i> Cambiar Foto
+              <input type="file" accept="image/*" (change)="uploadAvatar($event)" hidden />
+            </label>
+
+            <span class="cyber-role-badge" [ngClass]="'role-' + user?.role">{{ user?.role }}</span>
+
+            <div class="cyber-email-display">
+              <i class="fas fa-envelope"></i>
+              <span>{{ user?.email }}</span>
             </div>
           </div>
 
-          <div class="card profile-edit-card">
-            <div class="card-header">
-              <h3>Editar Perfil</h3>
+          <!-- Edit form -->
+          <div class="cyber-profile-card cyber-edit-card">
+            <div class="cyber-corner cyber-corner-tl"></div>
+            <div class="cyber-corner cyber-corner-br"></div>
+
+            <div class="cyber-card-header cyber-edit-header">
+              <h2 class="cyber-neon-text">
+                <i class="fas fa-pen"></i> Editar Perfil
+              </h2>
             </div>
-            <div class="settings-form">
-              <div class="form-group">
-                <label class="form-label">Nombre</label>
-                <input type="text" class="input-field" [(ngModel)]="profileForm.name" placeholder="Tu nombre" />
-              </div>
-              <div class="form-group">
-                <label class="form-label">Bio</label>
-                <textarea class="input-field textarea-field" [(ngModel)]="profileForm.bio" placeholder="Cuéntanos sobre ti..." rows="3"></textarea>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Discord</label>
-                <input type="text" class="input-field" [(ngModel)]="profileForm.discord" placeholder="usuario#0000" />
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label class="form-label">País</label>
-                  <input type="text" class="input-field" [(ngModel)]="profileForm.country" placeholder="Cuba" />
-                </div>
-                <div class="form-group">
-                  <label class="form-label">Teléfono</label>
-                  <input type="text" class="input-field" [(ngModel)]="profileForm.phone" placeholder="+53 ..." />
+
+            <div class="cyber-card-body">
+              <div class="cyber-form-group">
+                <label class="cyber-form-label">NOMBRE</label>
+                <div class="cyber-input-wrapper">
+                  <i class="fas fa-user cyber-input-icon"></i>
+                  <input type="text" class="cyber-input cyber-input-icon-field" [(ngModel)]="profileForm.name" placeholder="Tu nombre" />
                 </div>
               </div>
-              <div class="profile-actions">
-                <span class="profile-success" *ngIf="profileSuccess">{{ profileSuccess }}</span>
-                <span class="profile-error" *ngIf="profileError">{{ profileError }}</span>
-                <button class="btn-primary" (click)="saveProfile()" [disabled]="profileSaving">
-                  <i class="fas fa-save"></i> {{ profileSaving ? 'Guardando...' : 'Guardar Cambios' }}
+              <div class="cyber-form-group">
+                <label class="cyber-form-label">BIO</label>
+                <div class="cyber-input-wrapper">
+                  <i class="fas fa-quote-left cyber-input-icon textarea-icon"></i>
+                  <textarea class="cyber-input cyber-input-icon-field cyber-textarea" [(ngModel)]="profileForm.bio" placeholder="Cuéntanos sobre ti..." rows="3"></textarea>
+                </div>
+              </div>
+              <div class="cyber-form-group">
+                <label class="cyber-form-label">DISCORD</label>
+                <div class="cyber-input-wrapper">
+                  <i class="fab fa-discord cyber-input-icon"></i>
+                  <input type="text" class="cyber-input cyber-input-icon-field" [(ngModel)]="profileForm.discord" placeholder="usuario#0000" />
+                </div>
+              </div>
+              <div class="cyber-form-row">
+                <div class="cyber-form-group">
+                  <label class="cyber-form-label">PAÍS</label>
+                  <div class="cyber-input-wrapper">
+                    <i class="fas fa-globe cyber-input-icon"></i>
+                    <input type="text" class="cyber-input cyber-input-icon-field" [(ngModel)]="profileForm.country" placeholder="Cuba" />
+                  </div>
+                </div>
+                <div class="cyber-form-group">
+                  <label class="cyber-form-label">TELÉFONO</label>
+                  <div class="cyber-input-wrapper">
+                    <i class="fas fa-phone cyber-input-icon"></i>
+                    <input type="text" class="cyber-input cyber-input-icon-field" [(ngModel)]="profileForm.phone" placeholder="+53 ..." />
+                  </div>
+                </div>
+              </div>
+              <div class="cyber-profile-actions">
+                <span class="cyber-success-msg" *ngIf="profileSuccess">{{ profileSuccess }}</span>
+                <span class="cyber-error-msg" *ngIf="profileError">{{ profileError }}</span>
+                <button class="cyber-save-btn" (click)="saveProfile()" [disabled]="profileSaving">
+                  <i class="fas" [ngClass]="profileSaving ? 'fa-spinner fa-spin' : 'fa-save'"></i>
+                  {{ profileSaving ? 'Guardando...' : 'Guardar Cambios' }}
                 </button>
               </div>
             </div>
