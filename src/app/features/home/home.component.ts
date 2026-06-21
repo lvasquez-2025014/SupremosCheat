@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       title: 'MI CUENTA',
       items: [
-        { name: 'Dashboard', icon: 'fas fa-th-large', section: 'dashboard' },
+        { name: 'Mi Perfil', icon: 'fas fa-user', section: 'mi-perfil' },
         { name: 'Mi Rango', icon: 'fas fa-crown', section: 'mi-rango' },
         { name: 'Mis Compras', icon: 'fas fa-shopping-bag', section: 'mis-compras' },
       ]
@@ -76,7 +76,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     {
       title: 'MI CUENTA',
       items: [
-        { name: 'Dashboard', icon: 'fas fa-th-large', section: 'dashboard' },
         { name: 'Mi Perfil', icon: 'fas fa-user', section: 'mi-perfil' },
       ]
     },
@@ -106,6 +105,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
         { name: 'Analíticas', icon: 'fas fa-chart-line', section: 'analytics' },
         { name: 'Chat', icon: 'fas fa-comments', section: 'chat' },
         { name: 'Notificaciones', icon: 'fas fa-bell', section: 'notificaciones' },
+      ]
+    },
+    {
+      title: 'MI CUENTA',
+      items: [
+        { name: 'Mi Perfil', icon: 'fas fa-user', section: 'mi-perfil' },
       ]
     },
     {
@@ -154,6 +159,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     darkMode: true,
     twoFactor: false,
   };
+
+  profileForm = { name: '', bio: '', discord: '', country: '', phone: '' };
+  profileError = '';
+  profileSuccess = '';
+  profileSaving = false;
+  viewUserProfile: any = null;
 
   showPartnerModal = false;
   editingPartner: any = null;
@@ -210,6 +221,107 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     { id: 'binance', name: 'Binance Pay', icon: 'fas fa-coins', color: '#f0b90b', description: 'Paga con BNB, BTC, USDT y más' },
     { id: 'transferencia', name: 'Transferencia Bancaria', icon: 'fas fa-university', color: '#22d3ee', description: 'Transferencia o depósito directo' },
   ];
+
+  selectedPaymentMethod: string = '';
+  selectedCountry: string = '';
+  latamCountries = [
+    { code: 'MX', name: 'México', flag: '🇲🇽' },
+    { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+    { code: 'BO', name: 'Bolivia', flag: '🇧🇴' },
+    { code: 'BR', name: 'Brasil', flag: '🇧🇷' },
+    { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+    { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
+    { code: 'CR', name: 'Costa Rica', flag: '🇨🇷' },
+    { code: 'CU', name: 'Cuba', flag: '🇨🇺' },
+    { code: 'EC', name: 'Ecuador', flag: '🇪🇨' },
+    { code: 'SV', name: 'El Salvador', flag: '🇸🇻' },
+    { code: 'GT', name: 'Guatemala', flag: '🇬🇹' },
+    { code: 'HN', name: 'Honduras', flag: '🇭🇳' },
+    { code: 'NI', name: 'Nicaragua', flag: '🇳🇮' },
+    { code: 'PA', name: 'Panamá', flag: '🇵🇦' },
+    { code: 'PY', name: 'Paraguay', flag: '🇵🇾' },
+    { code: 'PE', name: 'Perú', flag: '🇵🇪' },
+    { code: 'DO', name: 'República Dominicana', flag: '🇩🇴' },
+    { code: 'UY', name: 'Uruguay', flag: '🇺🇾' },
+    { code: 'VE', name: 'Venezuela', flag: '🇻🇪' },
+  ];
+
+  bankDetails: Record<string, any> = {
+    MX: { bank: 'Spin by OXXO', account: '4217470121417873', holder: 'Haide Ayala Zavala', clabe: '', note: 'Depósito en efectivo en cualquier OXXO' },
+    AR: { bank: 'Mercado Pago / Transferencia', account: 'CBU pendiente', holder: 'Pending', clabe: '', note: 'Transferencia CVU/CBU' },
+    CO: { bank: 'Nequi / Daviplata', account: 'Pendiente', holder: 'Pendiente', clabe: '', note: 'Transferencia Nequi o Daviplata' },
+    PE: { bank: 'Yape / Plin', account: 'Pendiente', holder: 'Pendiente', clabe: '', note: 'Transferencia Yape o Plin' },
+    CL: { bank: 'Transferencia', account: 'Pendiente', holder: 'Pendiente', clabe: '', note: 'Transferencia bancaria' },
+    VE: { bank: 'Transferencia / Pago Móvil', account: 'Pendiente', holder: 'Pendiente', clabe: '', note: 'Pago móvil o transferencia' },
+    default: { bank: 'Transferencia Bancaria', account: 'Pendiente', holder: 'Pendiente', clabe: '', note: 'Contacta en Discord para datos exactos' },
+  };
+
+  getCountryBankDetails(): any {
+    return this.bankDetails[this.selectedCountry] || this.bankDetails['default'];
+  }
+
+  // ============ PROFILE ============
+
+  loadProfile(): void {
+    this.profileForm = {
+      name: this.user?.name || '',
+      bio: this.user?.bio || '',
+      discord: this.user?.discord || '',
+      country: this.user?.country || '',
+      phone: this.user?.phone || '',
+    };
+    this.profileError = '';
+    this.profileSuccess = '';
+  }
+
+  saveProfile(): void {
+    this.profileSaving = true;
+    this.profileError = '';
+    this.profileSuccess = '';
+    this.api.put<any>('profile', this.profileForm).subscribe({
+      next: (res) => {
+        this.profileSaving = false;
+        this.profileSuccess = 'Perfil actualizado';
+        const updated = res.data;
+        this.user = { ...this.user, ...updated };
+        localStorage.setItem('user', JSON.stringify(this.user));
+        setTimeout(() => this.profileSuccess = '', 3000);
+      },
+      error: (err) => {
+        this.profileSaving = false;
+        this.profileError = err.error?.message || 'Error al guardar';
+      }
+    });
+  }
+
+  uploadAvatar(event: any): void {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
+    this.api.post<any>('profile/avatar', formData).subscribe({
+      next: (res) => {
+        this.user = { ...this.user, avatar: res.data.avatar };
+        localStorage.setItem('user', JSON.stringify(this.user));
+      },
+      error: () => {}
+    });
+  }
+
+  viewUserProfileById(userId: string): void {
+    this.api.get<any>(`profile/${userId}`).subscribe({
+      next: (res) => {
+        this.viewUserProfile = res.data;
+        this.activeSection = 'ver-perfil';
+      },
+      error: () => {}
+    });
+  }
+
+  closeUserProfile(): void {
+    this.viewUserProfile = null;
+    this.activeSection = this.isAdmin ? 'socios' : 'clientes';
+  }
 
   private heartbeatInterval: any;
   private refreshInterval: any;
@@ -282,6 +394,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   showSection(section: string): void {
     this.activeSection = section;
     this.mobileMenuOpen = false;
+    if (section === 'mi-perfil') { this.loadProfile(); }
     if (section === 'dashboard' || section === 'analytics' || section === 'ganancias') {
       if (section === 'ganancias') { this.loadEarnings(); }
       setTimeout(() => this.initCharts(), 50);
@@ -933,6 +1046,21 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.showPaymentModal = false;
     this.selectedProduct = null;
     this.selectedPlan = null;
+    this.selectedPaymentMethod = '';
+    this.selectedCountry = '';
+  }
+
+  selectPaymentMethod(methodId: string): void {
+    if (methodId === 'transferencia') {
+      this.selectedPaymentMethod = 'transferencia';
+      return;
+    }
+    this.processPayment(methodId);
+  }
+
+  confirmTransfer(): void {
+    if (!this.selectedCountry) return;
+    this.processPayment('transferencia');
   }
 
   processPayment(methodId: string): void {

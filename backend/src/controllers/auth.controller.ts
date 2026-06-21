@@ -43,7 +43,7 @@ export async function register(req: AuthRequest, res: Response): Promise<void> {
       success: true,
       data: {
         token,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+        user: { id: user.id, name: user.name, email: user.email, role: user.role, bio: user.bio, avatar: user.avatar, discord: user.discord, country: user.country, phone: user.phone },
       },
     });
   } catch (error) {
@@ -92,7 +92,7 @@ export async function login(req: AuthRequest, res: Response): Promise<void> {
       success: true,
       data: {
         token,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+        user: { id: user.id, name: user.name, email: user.email, role: user.role, bio: user.bio, avatar: user.avatar, discord: user.discord, country: user.country, phone: user.phone },
       },
     });
   } catch (error) {
@@ -147,7 +147,7 @@ export async function googleLogin(req: AuthRequest, res: Response): Promise<void
       success: true,
       data: {
         token,
-        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+        user: { id: user.id, name: user.name, email: user.email, role: user.role, bio: user.bio, avatar: user.avatar, discord: user.discord, country: user.country, phone: user.phone },
       },
     });
   } catch (error) {

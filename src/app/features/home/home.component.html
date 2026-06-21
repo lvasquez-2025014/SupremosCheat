@@ -822,6 +822,9 @@
             <h3 class="partner-name">{{ partner.name }}</h3>
             <p style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">{{ partner.email }}</p>
             <div class="partner-actions" *ngIf="user?.role === 'admin'" style="margin-top: 12px; display: flex; gap: 8px;">
+              <button class="btn-sm btn-outline" (click)="viewUserProfileById(partner._id)">
+                <i class="fas fa-eye"></i> Ver Perfil
+              </button>
               <button class="btn-sm btn-outline" (click)="openPartnerModal(partner)">
                 <i class="fas fa-edit"></i> Editar
               </button>
@@ -863,6 +866,9 @@
             <h3 class="partner-name">{{ c.name }}</h3>
             <p style="color: var(--text-muted); font-size: 12px; margin-top: 4px;">{{ c.email }}</p>
             <div class="partner-actions" *ngIf="user?.role === 'admin'" style="margin-top: 12px; display: flex; gap: 8px;">
+              <button class="btn-sm btn-outline" (click)="viewUserProfileById(c._id)">
+                <i class="fas fa-eye"></i> Ver Perfil
+              </button>
               <button class="btn-sm btn-danger" (click)="deletePartner(c)">
                 <i class="fas fa-trash"></i> Eliminar
               </button>
@@ -1102,6 +1108,148 @@
               <div class="danger-actions">
                 <button class="btn-outline danger">Eliminar Cuenta</button>
                 <button class="btn-outline">Exportar Datos</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== MI PERFIL ==================== -->
+      <section *ngIf="activeSection === 'mi-perfil'" class="section-content">
+        <div class="section-header">
+          <div>
+            <h1>Mi Perfil</h1>
+            <p>Personaliza tu información</p>
+          </div>
+        </div>
+
+        <div class="profile-grid">
+          <div class="card profile-card">
+            <div class="profile-avatar-section">
+              <div class="profile-avatar-large">
+                <img *ngIf="user?.avatar" [src]="imageUrl + user?.avatar" alt="Avatar" />
+                <div *ngIf="!user?.avatar" class="profile-avatar-placeholder">
+                  <i class="fas fa-user"></i>
+                </div>
+              </div>
+              <label class="btn-sm btn-primary profile-avatar-btn">
+                <i class="fas fa-camera"></i> Cambiar Foto
+                <input type="file" accept="image/*" (change)="uploadAvatar($event)" hidden />
+              </label>
+              <span class="profile-role-badge" [ngClass]="'role-' + user?.role">{{ user?.role }}</span>
+            </div>
+
+            <div class="profile-info-list">
+              <div class="profile-info-item">
+                <i class="fas fa-envelope"></i>
+                <span>{{ user?.email }}</span>
+              </div>
+              <div class="profile-info-item" *ngIf="user?.discord">
+                <i class="fab fa-discord"></i>
+                <span>{{ user?.discord }}</span>
+              </div>
+              <div class="profile-info-item" *ngIf="user?.country">
+                <i class="fas fa-globe"></i>
+                <span>{{ user?.country }}</span>
+              </div>
+              <div class="profile-info-item" *ngIf="user?.phone">
+                <i class="fas fa-phone"></i>
+                <span>{{ user?.phone }}</span>
+              </div>
+              <div class="profile-info-item" *ngIf="user?.bio">
+                <i class="fas fa-quote-left"></i>
+                <span>{{ user?.bio }}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card profile-edit-card">
+            <div class="card-header">
+              <h3>Editar Perfil</h3>
+            </div>
+            <div class="settings-form">
+              <div class="form-group">
+                <label class="form-label">Nombre</label>
+                <input type="text" class="input-field" [(ngModel)]="profileForm.name" placeholder="Tu nombre" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Bio</label>
+                <textarea class="input-field textarea-field" [(ngModel)]="profileForm.bio" placeholder="Cuéntanos sobre ti..." rows="3"></textarea>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Discord</label>
+                <input type="text" class="input-field" [(ngModel)]="profileForm.discord" placeholder="usuario#0000" />
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">País</label>
+                  <input type="text" class="input-field" [(ngModel)]="profileForm.country" placeholder="Cuba" />
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Teléfono</label>
+                  <input type="text" class="input-field" [(ngModel)]="profileForm.phone" placeholder="+53 ..." />
+                </div>
+              </div>
+              <div class="profile-actions">
+                <span class="profile-success" *ngIf="profileSuccess">{{ profileSuccess }}</span>
+                <span class="profile-error" *ngIf="profileError">{{ profileError }}</span>
+                <button class="btn-primary" (click)="saveProfile()" [disabled]="profileSaving">
+                  <i class="fas fa-save"></i> {{ profileSaving ? 'Guardando...' : 'Guardar Cambios' }}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================== VER PERFIL (Admin) ==================== -->
+      <section *ngIf="isAdmin && activeSection === 'ver-perfil' && viewUserProfile" class="section-content">
+        <div class="section-header">
+          <div>
+            <h1>Perfil de {{ viewUserProfile.name }}</h1>
+            <p>Información del usuario</p>
+          </div>
+          <button class="btn-outline" (click)="closeUserProfile()">
+            <i class="fas fa-arrow-left"></i> Volver
+          </button>
+        </div>
+
+        <div class="profile-grid">
+          <div class="card profile-card">
+            <div class="profile-avatar-section">
+              <div class="profile-avatar-large">
+                <img *ngIf="viewUserProfile.avatar" [src]="imageUrl + viewUserProfile.avatar" alt="Avatar" />
+                <div *ngIf="!viewUserProfile.avatar" class="profile-avatar-placeholder">
+                  <i class="fas fa-user"></i>
+                </div>
+              </div>
+              <span class="profile-role-badge" [ngClass]="'role-' + viewUserProfile.role">{{ viewUserProfile.role }}</span>
+            </div>
+
+            <div class="profile-info-list">
+              <div class="profile-info-item">
+                <i class="fas fa-envelope"></i>
+                <span>{{ viewUserProfile.email }}</span>
+              </div>
+              <div class="profile-info-item" *ngIf="viewUserProfile.discord">
+                <i class="fab fa-discord"></i>
+                <span>{{ viewUserProfile.discord }}</span>
+              </div>
+              <div class="profile-info-item" *ngIf="viewUserProfile.country">
+                <i class="fas fa-globe"></i>
+                <span>{{ viewUserProfile.country }}</span>
+              </div>
+              <div class="profile-info-item" *ngIf="viewUserProfile.phone">
+                <i class="fas fa-phone"></i>
+                <span>{{ viewUserProfile.phone }}</span>
+              </div>
+              <div class="profile-info-item" *ngIf="viewUserProfile.bio">
+                <i class="fas fa-quote-left"></i>
+                <span>{{ viewUserProfile.bio }}</span>
+              </div>
+              <div class="profile-info-item">
+                <i class="fas fa-calendar"></i>
+                <span>Miembro desde {{ viewUserProfile.createdAt | date:'dd/MM/yyyy' }}</span>
               </div>
             </div>
           </div>
@@ -1447,29 +1595,67 @@
 
       <!-- Payment methods after plan selection -->
       <div *ngIf="selectedPlan">
-        <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 12px;">Método de pago</p>
-        <div class="payment-options">
-          <button class="payment-option" *ngFor="let pm of paymentMethods" (click)="processPayment(pm.id)">
-            <div class="payment-option-icon" [style.color]="pm.color">
-              <i [class]="pm.icon"></i>
-            </div>
-            <div class="payment-option-info">
-              <span class="payment-option-name">{{ pm.name }}</span>
-              <span class="payment-option-desc">{{ pm.description }}</span>
-            </div>
-            <i class="fas fa-chevron-right payment-option-arrow"></i>
-          </button>
+        <!-- Payment method selector (no country) -->
+        <div *ngIf="!selectedPaymentMethod">
+          <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 12px;">Método de pago</p>
+          <div class="payment-options">
+            <button class="payment-option" *ngFor="let pm of paymentMethods" (click)="selectPaymentMethod(pm.id)">
+              <div class="payment-option-icon" [style.color]="pm.color">
+                <i [class]="pm.icon"></i>
+              </div>
+              <div class="payment-option-info">
+                <span class="payment-option-name">{{ pm.name }}</span>
+                <span class="payment-option-desc">{{ pm.description }}</span>
+              </div>
+              <i class="fas fa-chevron-right payment-option-arrow"></i>
+            </button>
+          </div>
         </div>
 
-        <div class="transfer-info" *ngIf="false">
-          <div class="transfer-steps">
-            <p class="transfer-title"><i class="fas fa-info-circle"></i> Instrucciones de Transferencia</p>
-            <ol>
-              <li>Únete a nuestro Discord</li>
-              <li>Abre un ticket en #soporte</li>
-              <li>Envía el comprobante de pago</li>
-              <li>Recibe tu producto en minutos</li>
-            </ol>
+        <!-- Country selector for transferencia -->
+        <div *ngIf="selectedPaymentMethod === 'transferencia' && !selectedCountry">
+          <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 12px;">Selecciona tu país</p>
+          <div class="country-grid">
+            <button class="country-option" *ngFor="let c of latamCountries" (click)="selectedCountry = c.code">
+              <span class="country-flag">{{ c.flag }}</span>
+              <span class="country-name">{{ c.name }}</span>
+            </button>
+          </div>
+          <div style="margin-top: 14px;">
+            <button class="btn-outline btn-sm" (click)="selectedPaymentMethod = ''"><i class="fas fa-arrow-left"></i> Volver</button>
+          </div>
+        </div>
+
+        <!-- Bank details after country selection -->
+        <div *ngIf="selectedPaymentMethod === 'transferencia' && selectedCountry">
+          <p style="color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; margin-bottom: 12px;">Datos de transferencia — {{ getCountryBankDetails().bank }}</p>
+          <div class="bank-details-card">
+            <div class="bank-detail-row">
+              <span class="bank-label">Banco / Método</span>
+              <span class="bank-value">{{ getCountryBankDetails().bank }}</span>
+            </div>
+            <div class="bank-detail-row">
+              <span class="bank-label">Cuenta / Tarjeta</span>
+              <span class="bank-value highlight">{{ getCountryBankDetails().account }}</span>
+            </div>
+            <div class="bank-detail-row">
+              <span class="bank-label">Titular</span>
+              <span class="bank-value">{{ getCountryBankDetails().holder }}</span>
+            </div>
+            <div class="bank-detail-row" *ngIf="getCountryBankDetails().clabe">
+              <span class="bank-label">CLABE</span>
+              <span class="bank-value">{{ getCountryBankDetails().clabe }}</span>
+            </div>
+            <div class="bank-note">
+              <i class="fas fa-info-circle"></i> {{ getCountryBankDetails().note }}
+            </div>
+            <div class="bank-amount">
+              Monto a pagar: <strong>${{ selectedPlan?.price }} USD</strong>
+            </div>
+          </div>
+          <div style="margin-top: 14px; display: flex; gap: 10px;">
+            <button class="btn-outline btn-sm" (click)="selectedCountry = ''"><i class="fas fa-arrow-left"></i> Volver</button>
+            <button class="btn-primary btn-sm" (click)="confirmTransfer()"><i class="fas fa-check"></i> Confirmar y Abrir Discord</button>
           </div>
         </div>
       </div>

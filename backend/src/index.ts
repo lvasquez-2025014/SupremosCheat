@@ -4,6 +4,7 @@ dns.setServers(['8.8.8.8', '1.1.1.1']);
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fileUpload from 'express-fileupload';
 import { connectDatabase } from './services/database';
 import { config } from './config';
 import { applySecurity } from './middleware/security.middleware';
@@ -19,6 +20,7 @@ import configRoutes from './routes/config.routes';
 import vendedorRoutes from './routes/vendedor.routes';
 import clienteRoutes from './routes/cliente.routes';
 import orderRoutes from './routes/order.routes';
+import profileRoutes from './routes/profile.routes';
 
 const app = express();
 
@@ -48,6 +50,11 @@ app.use(cors({
 
 app.use(express.json({ limit: '1mb' }));
 app.use(express.urlencoded({ extended: true, limit: '1mb' }));
+app.use(fileUpload({
+  limits: { fileSize: 2 * 1024 * 1024 },
+  abortOnLimit: true,
+  limitHandler: (_req, res) => { res.status(413).json({ message: 'Archivo demasiado grande (máx 2MB)' }); }
+}));
 
 app.set('trust proxy', 1);
 
@@ -66,6 +73,7 @@ app.use('/api/config', configRoutes);
 app.use('/api/vendedor', vendedorRoutes);
 app.use('/api/cliente', clienteRoutes);
 app.use('/api/orders', orderRoutes);
+app.use('/api/profile', profileRoutes);
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });

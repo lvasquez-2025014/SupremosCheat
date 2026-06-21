@@ -28,6 +28,21 @@ export class User extends TimeStamps {
 
   @prop({ default: true })
   isActive!: boolean;
+
+  @prop({ trim: true, default: '' })
+  bio!: string;
+
+  @prop({ trim: true, default: '' })
+  avatar!: string;
+
+  @prop({ trim: true, default: '' })
+  discord!: string;
+
+  @prop({ trim: true, default: '' })
+  country!: string;
+
+  @prop({ trim: true, default: '' })
+  phone!: string;
 }
 
 export const UserModel = getModelForClass(User);

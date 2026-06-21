@@ -18,6 +18,10 @@ export interface User {
   email: string;
   role: UserRole;
   avatar?: string;
+  bio?: string;
+  discord?: string;
+  country?: string;
+  phone?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -31,5 +35,15 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   token: string;
-  user: Omit<User, 'avatar' | 'createdAt' | 'updatedAt'>;
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    role: UserRole;
+    bio?: string;
+    avatar?: string;
+    discord?: string;
+    country?: string;
+    phone?: string;
+  };
 }
