@@ -2,6 +2,8 @@ import { Router, Response } from 'express';
 import { authenticate, authorize } from '../middleware/auth.middleware';
 import { AuthRequest } from '../middleware/auth.middleware';
 import { UserModel, UserRole } from '../models/user.model';
+import { ProductModel } from '../models/product.model';
+import { MessageModel, ConversationModel } from '../models/message.model';
 
 const router = Router();
 
@@ -11,10 +13,84 @@ router.get('/stats', authenticate, authorize('admin'), async (_req: AuthRequest,
   const vendedores = await UserModel.countDocuments({ role: UserRole.VENDEDOR });
   const clientes = await UserModel.countDocuments({ role: UserRole.CLIENTE });
 
+  const products = await ProductModel.find().select('name sales prices').lean();
+  const totalProducts = products.length;
+  const totalSales = products.reduce((sum, p) => sum + (p.sales || 0), 0);
+
+  let totalRevenue = 0;
+  for (const p of products) {
+    const minPrice = p.prices?.length ? Math.min(...p.prices.map(pr => pr.price)) : 0;
+    totalRevenue += (p.sales || 0) * minPrice;
+  }
+
   res.json({
     success: true,
-    data: { totalUsers, admins, vendedores, clientes },
+    data: {
+      totalUsers, admins, vendedores, clientes,
+      totalProducts, totalSales, totalRevenue,
+    },
   });
+});
+
+router.get('/activity', authenticate, authorize('admin'), async (_req: AuthRequest, res: Response) => {
+  try {
+    const recentUsers = await UserModel.find()
+      .select('name email role createdAt')
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    const recentProducts = await ProductModel.find()
+      .select('name sales createdAt updatedAt')
+      .sort({ updatedAt: -1 })
+      .limit(5)
+      .lean();
+
+    const recentMessages = await MessageModel.find({ isDeleted: { $ne: true } })
+      .populate('sender', 'name role')
+      .sort({ createdAt: -1 })
+      .limit(5)
+      .lean();
+
+    const activity: any[] = [];
+
+    for (const u of recentUsers) {
+      activity.push({
+        type: 'user',
+        user: u.name,
+        action: 'se registró en el panel',
+        detail: u.email,
+        timestamp: u.createdAt,
+      });
+    }
+
+    for (const p of recentProducts) {
+      activity.push({
+        type: 'product',
+        user: 'Producto',
+        action: p.sales > 0 ? `${p.sales} ventas realizadas` : 'añadido al catálogo',
+        detail: p.name,
+        timestamp: p.updatedAt || p.createdAt,
+      });
+    }
+
+    for (const m of recentMessages) {
+      const senderName = (m.sender as any)?.name || 'Desconocido';
+      activity.push({
+        type: 'message',
+        user: senderName,
+        action: 'envió un mensaje',
+        detail: '',
+        timestamp: m.createdAt,
+      });
+    }
+
+    activity.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+
+    res.json({ success: true, data: activity.slice(0, 10) });
+  } catch (err) {
+    res.json({ success: true, data: [] });
+  }
 });
 
 router.post('/users', authenticate, authorize('admin'), async (req: AuthRequest, res: Response) => {

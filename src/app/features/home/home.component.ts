@@ -69,10 +69,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ];
 
   statsCards = [
-    { title: 'Ganancias Totales', value: '$0.00', change: '+0%', changeType: 'positive', icon: 'fas fa-dollar-sign', color: 'cyan' },
-    { title: 'Ventas del Mes', value: '0', change: '+0%', changeType: 'positive', icon: 'fas fa-shopping-bag', color: 'pink' },
-    { title: 'Socios Activos', value: '0', change: '+0%', changeType: 'positive', icon: 'fas fa-users', color: 'lime' },
-    { title: 'Tasa de Conversión', value: '0%', change: '+0%', changeType: 'positive', icon: 'fas fa-chart-pie', color: 'violet' },
+    { title: 'Ganancias Totales', value: '$0.00', change: '', changeType: 'positive', icon: 'fas fa-dollar-sign', color: 'cyan' },
+    { title: 'Ventas Totales', value: '0', change: '', changeType: 'positive', icon: 'fas fa-shopping-bag', color: 'pink' },
+    { title: 'Usuarios', value: '0', change: '', changeType: 'positive', icon: 'fas fa-users', color: 'lime' },
+    { title: 'Productos', value: '0', change: '', changeType: 'positive', icon: 'fas fa-box', color: 'violet' },
   ];
 
   products = [
@@ -92,18 +92,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     { id: 1, title: 'Bienvenido a Supremo Cheats', message: 'Tu panel de control está listo para usar', time: 'Ahora', read: false, icon: 'fas fa-info-circle', color: 'cyan' }
   ];
 
-  recentActivity = [
-    { user: 'Sistema', action: 'Panel actualizado correctamente', product: '', time: 'Ahora' },
-    { user: 'Sistema', action: 'Productos cargados en el catálogo', product: 'Panel VIP PC, Bypass APK', time: 'Hace 1 min' },
-    { user: 'Sistema', action: 'Bienvenido a Supremo Cheats', product: '', time: 'Hace 2 min' },
-  ];
+  recentActivity: any[] = [];
 
-  topProducts = [
-    { name: 'Panel VIP PC', sales: 0, revenue: '$0.00', trend: 0, priceRange: '$1 - $40' },
-    { name: 'Bypass APK', sales: 0, revenue: '$0.00', trend: 0, priceRange: '$1 - $12' },
-    { name: 'Panel Proxy Android', sales: 0, revenue: '$0.00', trend: 0, priceRange: '$2 - $25' },
-    { name: 'Panel Proxy iOS', sales: 0, revenue: '$0.00', trend: 0, priceRange: '$2 - $25' },
-  ];
+  topProducts: any[] = [];
 
   settings = {
     storeName: 'Supremo Cheats',
@@ -192,6 +183,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (!this.isClient) {
       this.loadPartners();
       this.loadClientes();
+      this.loadActivity();
+      this.loadTopProducts();
+      this.loadStats();
     }
 
     // Heartbeat every 30s - refreshes token to keep session alive
@@ -274,6 +268,52 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   loadClientes(): void {
     this.api.get<any>('admin/users').subscribe({
       next: (res) => { this.clientes = (res.data || []).filter((u: any) => u.role === 'cliente'); },
+      error: () => {}
+    });
+  }
+
+  loadActivity(): void {
+    this.api.get<any>('admin/activity').subscribe({
+      next: (res) => { this.recentActivity = res.data || []; },
+      error: () => {}
+    });
+  }
+
+  loadTopProducts(): void {
+    this.api.get<any>('products').subscribe({
+      next: (res) => {
+        const products = (res.data || [])
+          .sort((a: any, b: any) => (b.sales || 0) - (a.sales || 0))
+          .slice(0, 5);
+        const maxSales = Math.max(...products.map((p: any) => p.sales || 0), 1);
+        this.topProducts = products.map((p: any) => {
+          const prices = p.prices || [];
+          const minPrice = prices.length ? Math.min(...prices.map((pr: any) => pr.price)) : 0;
+          const maxPrice = prices.length ? Math.max(...prices.map((pr: any) => pr.price)) : 0;
+          return {
+            name: p.name,
+            sales: p.sales || 0,
+            revenue: `$${((p.sales || 0) * minPrice).toFixed(2)}`,
+            trend: ((p.sales || 0) / maxSales) * 100,
+            priceRange: prices.length ? `$${minPrice} - $${maxPrice}` : 'Sin precios',
+          };
+        });
+      },
+      error: () => {}
+    });
+  }
+
+  loadStats(): void {
+    this.api.get<any>('admin/stats').subscribe({
+      next: (res) => {
+        const d = res.data;
+        this.statsCards = [
+          { title: 'Ganancias Totales', value: `$${(d.totalRevenue || 0).toFixed(2)}`, change: '', changeType: 'positive', icon: 'fas fa-dollar-sign', color: 'cyan' },
+          { title: 'Ventas Totales', value: `${d.totalSales || 0}`, change: '', changeType: 'positive', icon: 'fas fa-shopping-bag', color: 'pink' },
+          { title: 'Usuarios', value: `${d.totalUsers || 0}`, change: `${d.clientes || 0} clientes`, changeType: 'positive', icon: 'fas fa-users', color: 'lime' },
+          { title: 'Productos', value: `${d.totalProducts || 0}`, change: `${d.vendedores || 0} vendedores`, changeType: 'positive', icon: 'fas fa-box', color: 'violet' },
+        ];
+      },
       error: () => {}
     });
   }
@@ -507,7 +547,19 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   getInitials(name: string): string {
     if (!name) return '?';
-    return name.split(' ').map(w => w.charAt(0)).join('').substring(0, 2).toUpperCase();
+    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  }
+
+  getTimeAgo(timestamp: any): string {
+    if (!timestamp) return '';
+    const now = new Date();
+    const then = new Date(timestamp);
+    const diff = Math.floor((now.getTime() - then.getTime()) / 1000);
+    if (diff < 60) return 'Ahora';
+    if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
+    if (diff < 86400) return `Hace ${Math.floor(diff / 3600)}h`;
+    if (diff < 604800) return `Hace ${Math.floor(diff / 86400)}d`;
+    return then.toLocaleDateString('es-ES');
   }
 
   getGradient(role: string, senderName?: string): string {
