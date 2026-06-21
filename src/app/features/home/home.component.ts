@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ElementRef, ViewChild, OnDestroy, HostListener } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth.service';
 import { ApiService } from '@core/services/api.service';
@@ -103,7 +103,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       title: 'ADMINISTRACIÓN',
       items: [
         { name: 'Socios', icon: 'fas fa-handshake', section: 'socios' },
-        { name: 'Clientes', icon: 'fas fa-users', section: 'clientes' },
+        { name: 'Usuarios', icon: 'fas fa-users', section: 'usuarios' },
         { name: 'Analíticas', icon: 'fas fa-chart-line', section: 'analytics' },
         { name: 'Chat', icon: 'fas fa-comments', section: 'chat' },
         { name: 'Notificaciones', icon: 'fas fa-bell', section: 'notificaciones' },
@@ -144,6 +144,38 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   earningsData: any = { weekly: [], totalRevenue: 0, totalOrders: 0, transactions: [] };
   partners: any[] = [];
   clientes: any[] = [];
+  allUsers: any[] = [];
+  usSearchQuery = '';
+  filteredUsersList: any[] = [];
+  showAddUserModal = false;
+  usNewName = '';
+  usNewEmail = '';
+  usNewPassword = '';
+  usNewRole = 'vendedor';
+  usSaving = false;
+  usErrors: any = {};
+  usDropdownOpen: string | null = null;
+  usModalShake = false;
+  showConfirmDelete = false;
+  usUserToDelete: any = null;
+  usToasts: any[] = [];
+  private usToastId = 0;
+  private usSubtitleInterval: any;
+  subtitleAnimState: 'visible' | 'exit' | 'enter' = 'visible';
+  currentSubtitle = 'Gestiona los usuarios del panel';
+  titleChars: string[] = [];
+  private usSubtitleMessages = [
+    'Gestiona los usuarios del panel',
+    'Administra roles y permisos',
+    'Control total de tu equipo',
+    'Monitorea la actividad en tiempo real',
+    'Agrega, edita y elimina usuarios',
+    'Panel de administración avanzado',
+    'Seguridad y accesos centralizados'
+  ];
+  private usSubIdx = 0;
+  private usGradIdx = 0;
+  private usClickHandler: any;
 
   notifications = [
     { id: 1, title: 'Bienvenido a Supremo Cheats', message: 'Tu panel de control está listo para usar', time: 'Ahora', read: false, icon: 'fas fa-info-circle', color: 'cyan' }
@@ -372,6 +404,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.user = this.auth.user;
+    this.titleChars = 'Usuarios'.split('');
     if (this.isClient) {
       this.activeSection = 'tienda';
       this.loadClientOrders();
@@ -428,6 +461,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.refreshInterval) clearInterval(this.refreshInterval);
     if (this.msgPollInterval) clearInterval(this.msgPollInterval);
     if (this.clockInterval) clearInterval(this.clockInterval);
+    if (this.usSubtitleInterval) clearInterval(this.usSubtitleInterval);
     this.destroyCharts();
   }
 
@@ -444,6 +478,15 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       if (section === 'ganancias') { this.loadEarnings(); }
       setTimeout(() => this.initCharts(), 50);
     }
+    if (section === 'usuarios') {
+      this.loadUsers();
+      this.initUsSubtitleRotation();
+      this.subtitleAnimState = 'visible';
+      this.currentSubtitle = this.usSubtitleMessages[0];
+      this.usSubIdx = 0;
+    } else {
+      if (this.usSubtitleInterval) { clearInterval(this.usSubtitleInterval); this.usSubtitleInterval = null; }
+    }
   }
 
   get activeNavSections() {
@@ -454,6 +497,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   get activeNavItems(): any[] {
     return this.activeNavSections.flatMap((s: any) => s.items);
+  }
+
+  @HostListener('document:click')
+  onDocumentClick(): void {
+    this.usDropdownOpen = null;
   }
 
   toggleSidebar(): void { this.sidebarCollapsed = !this.sidebarCollapsed; }
@@ -472,6 +520,16 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     return Math.abs(this.transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0));
   }
 
+  get usAdminCount(): number { return this.allUsers.filter(u => u.role === 'admin').length; }
+  get usVendorCount(): number { return this.allUsers.filter(u => u.role === 'vendedor').length; }
+  get usClientCount(): number { return this.allUsers.filter(u => u.role === 'cliente').length; }
+
+  get filteredUsers(): any[] {
+    const q = this.usSearchQuery.toLowerCase().trim();
+    if (!q) return this.allUsers;
+    return this.allUsers.filter(u => u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
+  }
+
   loadPartners(): void {
     this.api.get<any>('admin/users').subscribe({
       next: (res) => { this.partners = (res.data || []).filter((u: any) => u._id !== this.user?.id && u.role !== 'cliente'); },
@@ -484,6 +542,156 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       next: (res) => { this.clientes = (res.data || []).filter((u: any) => u.role === 'cliente'); },
       error: () => {}
     });
+  }
+
+  loadUsers(): void {
+    this.api.get<any>('admin/users').subscribe({
+      next: (res) => { this.allUsers = (res.data || []); },
+      error: () => {}
+    });
+  }
+
+  getAvatarGradient(index: number): string {
+    const grads = ['us-avatar-g1', 'us-avatar-g2', 'us-avatar-g3', 'us-avatar-g4', 'us-avatar-g5'];
+    return grads[index % grads.length];
+  }
+
+  openAddUserModal(): void {
+    this.showAddUserModal = true;
+    this.usNewName = '';
+    this.usNewEmail = '';
+    this.usNewPassword = '';
+    this.usNewRole = 'vendedor';
+    this.usErrors = {};
+    this.usModalShake = false;
+  }
+
+  closeAddUserModal(): void {
+    this.showAddUserModal = false;
+    this.usErrors = {};
+    this.usModalShake = false;
+  }
+
+  addUser(): void {
+    const name = this.usNewName.trim();
+    const email = this.usNewEmail.trim();
+    const password = this.usNewPassword.trim();
+    this.usErrors = {};
+    let hasError = false;
+
+    if (!name) { this.usErrors.name = true; hasError = true; }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { this.usErrors.email = true; hasError = true; }
+    if (!password || password.length < 6) { this.usErrors.password = true; hasError = true; }
+
+    if (hasError) {
+      this.usModalShake = true;
+      setTimeout(() => this.usModalShake = false, 400);
+      return;
+    }
+
+    this.usSaving = true;
+    this.api.post<any>('admin/users', { name, email, password, role: this.usNewRole }).subscribe({
+      next: (res) => {
+        this.usSaving = false;
+        this.loadUsers();
+        this.closeAddUserModal();
+        this.showUsToast(`Usuario "${name}" agregado correctamente`, 'success');
+      },
+      error: (err) => {
+        this.usSaving = false;
+        const msg = err?.error?.message || 'Error al crear usuario';
+        this.showUsToast(msg, 'error');
+        this.usModalShake = true;
+        setTimeout(() => this.usModalShake = false, 400);
+      }
+    });
+  }
+
+  changeUserRole(user: any, newRole: string): void {
+    if (user.role === newRole) { this.usDropdownOpen = null; return; }
+    this.api.put<any>(`admin/users/${user._id}/role`, { role: newRole }).subscribe({
+      next: () => {
+        user.role = newRole;
+        this.usDropdownOpen = null;
+        this.showUsToast(`Rol actualizado a "${this.getRoleLabel(newRole)}"`, 'info');
+      },
+      error: (err) => {
+        this.usDropdownOpen = null;
+        this.showUsToast(err?.error?.message || 'Error al actualizar rol', 'error');
+      }
+    });
+  }
+
+  toggleUserDropdown(userId: string): void {
+    this.usDropdownOpen = this.usDropdownOpen === userId ? null : userId;
+  }
+
+  confirmDeleteUser(user: any): void {
+    this.usUserToDelete = user;
+    this.showConfirmDelete = true;
+  }
+
+  cancelDelete(): void {
+    this.usUserToDelete = null;
+    this.showConfirmDelete = false;
+  }
+
+  executeDeleteUser(): void {
+    if (!this.usUserToDelete) return;
+    const user = this.usUserToDelete;
+    const name = user.name;
+    this.api.delete<any>(`admin/users/${user._id}`).subscribe({
+      next: () => {
+        this.allUsers = this.allUsers.filter(u => u._id !== user._id);
+        this.showConfirmDelete = false;
+        this.usUserToDelete = null;
+        this.showUsToast(`Usuario "${name}" eliminado`, 'error');
+      },
+      error: (err) => {
+        this.showConfirmDelete = false;
+        this.usUserToDelete = null;
+        this.showUsToast(err?.error?.message || 'Error al eliminar usuario', 'error');
+      }
+    });
+  }
+
+  onUsSearch(): void { }
+
+  trackByUserId(_index: number, user: any): string { return user._id; }
+
+  trackByToastId(_index: number, t: any): number { return t.id; }
+
+  onUsCardMove(event: MouseEvent, index: number): void {
+    const cards = document.querySelectorAll('.us-card');
+    if (cards[index]) {
+      const rect = cards[index].getBoundingClientRect();
+      (cards[index] as HTMLElement).style.setProperty('--mouse-x', ((event.clientX - rect.left) / rect.width) * 100 + '%');
+      (cards[index] as HTMLElement).style.setProperty('--mouse-y', ((event.clientY - rect.top) / rect.height) * 100 + '%');
+    }
+  }
+
+  showUsToast(message: string, type: 'success' | 'error' | 'info' = 'info'): void {
+    const id = ++this.usToastId;
+    this.usToasts.push({ id, message, type, _removing: false });
+    setTimeout(() => {
+      const t = this.usToasts.find(x => x.id === id);
+      if (t) t._removing = true;
+      setTimeout(() => { this.usToasts = this.usToasts.filter(x => x.id !== id); }, 300);
+    }, 3000);
+  }
+
+  private initUsSubtitleRotation(): void {
+    this.usSubtitleInterval = setInterval(() => {
+      this.subtitleAnimState = 'exit';
+      setTimeout(() => {
+        this.usSubIdx = (this.usSubIdx + 1) % this.usSubtitleMessages.length;
+        this.currentSubtitle = this.usSubtitleMessages[this.usSubIdx];
+        this.subtitleAnimState = 'enter';
+        setTimeout(() => {
+          this.subtitleAnimState = 'visible';
+        }, 50);
+      }, 500);
+    }, 4000);
   }
 
   loadActivity(): void {
