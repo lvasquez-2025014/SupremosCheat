@@ -6,6 +6,13 @@ Thumbs.db
 .cache/
 coverage/
 .env
+.env*
+!.env.example
 *.vbs
 server.log
 .angular/
+backend/certs/
+*.pfx
+*.p12
+*.key
+*.pem

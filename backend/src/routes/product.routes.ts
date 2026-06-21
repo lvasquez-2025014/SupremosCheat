@@ -12,6 +12,7 @@ const imagesDir = path.join(__dirname, '../../public/images');
 if (!fs.existsSync(imagesDir)) fs.mkdirSync(imagesDir, { recursive: true });
 
 const ALLOWED_MIMES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+const ALLOWED_EXTS = ['.jpg', '.jpeg', '.png', '.gif', '.webp'];
 
 const storage = multer.diskStorage({
   destination: (_req, _file, cb) => cb(null, imagesDir),
@@ -26,7 +27,8 @@ const upload = multer({
   storage,
   limits: { fileSize: 5 * 1024 * 1024 },
   fileFilter: (_req, file, cb) => {
-    if (ALLOWED_MIMES.includes(file.mimetype)) cb(null, true);
+    const ext = path.extname(file.originalname).toLowerCase();
+    if (ALLOWED_MIMES.includes(file.mimetype) && ALLOWED_EXTS.includes(ext)) cb(null, true);
     else cb(new Error('Solo se permiten imágenes (JPEG, PNG, GIF, WebP)'));
   }
 });
@@ -98,23 +100,13 @@ router.post('/', authenticate, authorize('admin'), upload.single('imageFile'), a
   }
 });
 
-router.put('/:id', authenticate, authorize('admin', 'vendedor'), upload.single('imageFile'), async (req: AuthRequest, res: Response) => {
+router.put('/:id', authenticate, authorize('admin'), upload.single('imageFile'), async (req: AuthRequest, res: Response) => {
   try {
     const { id } = req.params as { id: string };
-    const userId = req.userId!;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
       res.status(400).json({ message: 'ID de producto inválido' });
       return;
-    }
-
-    const user = await UserModel.findById(userId).select('role');
-    if (user?.role === 'vendedor') {
-      const existing = await ProductModel.findById(id);
-      if (!existing) {
-        res.status(404).json({ message: 'Producto no encontrado' });
-        return;
-      }
     }
 
     const { name, description, category, prices, stock, isActive, badge, badgeType, icon, image } = req.body;

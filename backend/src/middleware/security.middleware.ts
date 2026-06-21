@@ -28,6 +28,9 @@ export function applySecurity(app: Express): void {
     message: { message: 'Demasiadas peticiones, intenta de nuevo más tarde' },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: (req) => {
+      return req.ip || req.socket.remoteAddress || 'unknown';
+    },
   }));
 
   const authLimiter = rateLimit({
@@ -36,6 +39,9 @@ export function applySecurity(app: Express): void {
     message: { message: 'Demasiados intentos de autenticación, espera 15 minutos' },
     standardHeaders: true,
     legacyHeaders: false,
+    keyGenerator: (req) => {
+      return req.ip || req.socket.remoteAddress || 'unknown';
+    },
   });
   app.use('/api/auth/login', authLimiter);
   app.use('/api/auth/register', authLimiter);

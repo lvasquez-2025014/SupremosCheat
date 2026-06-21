@@ -50,7 +50,12 @@ app.use(express.urlencoded({ extended: true, limit: '1mb' }));
 
 app.set('trust proxy', 1);
 
-app.use('/images', express.static(path.join(__dirname, '../public/images')));
+app.use('/images', express.static(path.join(__dirname, '../public/images'), {
+  setHeaders: (res) => {
+    res.setHeader('Content-Disposition', 'inline');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+  }
+}));
 
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);

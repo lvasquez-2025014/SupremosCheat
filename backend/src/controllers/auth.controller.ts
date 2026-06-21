@@ -64,14 +64,16 @@ export async function login(req: AuthRequest, res: Response): Promise<void> {
     const escaped = escapeRegex(safeEmail);
 
     const user = await UserModel.findOne({
-      $or: [
-        { email: { $regex: new RegExp(`^${escaped}$`, 'i') } },
-        { name: { $regex: new RegExp(`^${escaped}$`, 'i') } },
-      ],
+      email: { $regex: new RegExp(`^${escaped}$`, 'i') },
     });
     if (!user) {
       if ((req as any).trackLoginAttempt) (req as any).trackLoginAttempt(false);
       res.status(401).json({ message: 'Credenciales inválidas' });
+      return;
+    }
+
+    if (user.isActive === false) {
+      res.status(403).json({ message: 'Cuenta desactivada. Contacta al administrador.' });
       return;
     }
 

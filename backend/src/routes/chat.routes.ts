@@ -347,6 +347,13 @@ router.get('/users', authenticate, async (_req: AuthRequest, res: Response) => {
 router.post('/heartbeat', authenticate, async (req: AuthRequest, res: Response) => {
   try {
     const userId = req.userId!;
+
+    const user = await UserModel.findById(userId).select('isActive role');
+    if (!user || user.isActive === false) {
+      res.status(401).json({ message: 'Sesión inválida' });
+      return;
+    }
+
     setOnline(userId);
     const newToken = jwt.sign({ id: userId }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
     res.json({ success: true, token: newToken });
