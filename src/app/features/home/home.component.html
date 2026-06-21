@@ -1249,73 +1249,124 @@
         </div>
       </section>
 
-      <!-- ==================== ANALITICAS ==================== -->
-      <section *ngIf="isAdmin && activeSection === 'analytics'" class="section-content">
-        <div class="section-header">
+      <!-- ==================== ANALÍTICAS ==================== -->
+      <section *ngIf="isAdmin && activeSection === 'analytics'" class="section-content analytics-section">
+        <!-- Header -->
+        <div class="analytics-header">
           <div>
-            <h1>Analíticas</h1>
-            <p>Métricas y estadísticas del panel</p>
+            <div class="analytics-title-row">
+              <h1 class="analytics-title">Analíticas</h1>
+              <span class="analytics-badge">EN VIVO</span>
+            </div>
+            <div class="analytics-title-underline"></div>
+            <p class="analytics-subtitle">Métricas y estadísticas del panel</p>
           </div>
         </div>
 
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <div class="stat-icon stat-icon-cyan"><i class="fas fa-eye"></i></div>
+        <!-- KPI Cards -->
+        <div class="analytics-kpi-grid">
+          <div class="analytics-kpi-card">
+            <div class="analytics-kpi-glow" style="background: radial-gradient(circle at 50% 0%, rgba(34,211,238,0.2), transparent 70%);"></div>
+            <div class="analytics-kpi-top">
+              <span class="analytics-kpi-label">Visitas Totales</span>
+              <div class="analytics-kpi-icon-wrap analytics-icon-cyan">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+              </div>
             </div>
-            <div class="stat-value">0</div>
-            <div class="stat-title">Visitas Totales</div>
+            <div class="analytics-kpi-value analytics-value-cyan">1,284</div>
+            <div class="analytics-kpi-footer">
+              <span class="analytics-kpi-change analytics-change-up">+12.5%</span>
+              <span class="analytics-kpi-period">vs mes anterior</span>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <div class="stat-icon stat-icon-pink"><i class="fas fa-mouse-pointer"></i></div>
+          <div class="analytics-kpi-card">
+            <div class="analytics-kpi-glow" style="background: radial-gradient(circle at 50% 0%, rgba(244,114,182,0.2), transparent 70%);"></div>
+            <div class="analytics-kpi-top">
+              <span class="analytics-kpi-label">Ventas</span>
+              <div class="analytics-kpi-icon-wrap analytics-icon-pink">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+              </div>
             </div>
-            <div class="stat-value">0</div>
-            <div class="stat-title">Clics Únicos</div>
+            <div class="analytics-kpi-value analytics-value-pink">847</div>
+            <div class="analytics-kpi-footer">
+              <span class="analytics-kpi-change analytics-change-up">+8.3%</span>
+              <span class="analytics-kpi-period">vs mes anterior</span>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <div class="stat-icon stat-icon-lime"><i class="fas fa-user-plus"></i></div>
+          <div class="analytics-kpi-card">
+            <div class="analytics-kpi-glow" style="background: radial-gradient(circle at 50% 0%, rgba(132,204,22,0.2), transparent 70%);"></div>
+            <div class="analytics-kpi-top">
+              <span class="analytics-kpi-label">Tasa Conversión</span>
+              <div class="analytics-kpi-icon-wrap analytics-icon-lime">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/></svg>
+              </div>
             </div>
-            <div class="stat-value">0</div>
-            <div class="stat-title">Nuevos Usuarios</div>
+            <div class="analytics-kpi-value analytics-value-lime">3.2%</div>
+            <div class="analytics-kpi-footer">
+              <span class="analytics-kpi-change analytics-change-up">+0.8%</span>
+              <span class="analytics-kpi-period">vs mes anterior</span>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-card-header">
-              <div class="stat-icon stat-icon-violet"><i class="fas fa-clock"></i></div>
+          <div class="analytics-kpi-card">
+            <div class="analytics-kpi-glow" style="background: radial-gradient(circle at 50% 0%, rgba(167,139,250,0.2), transparent 70%);"></div>
+            <div class="analytics-kpi-top">
+              <span class="analytics-kpi-label">Tiempo Promedio</span>
+              <div class="analytics-kpi-icon-wrap analytics-icon-violet">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
             </div>
-            <div class="stat-value">0:00</div>
-            <div class="stat-title">Tiempo Promedio</div>
+            <div class="analytics-kpi-value analytics-value-violet">4m 32s</div>
+            <div class="analytics-kpi-footer">
+              <span class="analytics-kpi-change analytics-change-down">-2.1%</span>
+              <span class="analytics-kpi-period">vs mes anterior</span>
+            </div>
           </div>
         </div>
 
-        <div class="charts-row">
-          <div class="card chart-card">
-            <div class="card-header">
-              <h3>Visitas por Día</h3>
+        <!-- Charts Row: Visitas (big) + Conversión (small) -->
+        <div class="analytics-charts-row">
+          <div class="analytics-chart-card analytics-chart-main">
+            <div class="analytics-chart-header">
+              <div>
+                <h3 class="analytics-chart-title">Visitas por Día</h3>
+                <span class="analytics-chart-sub">Últimos 7 días</span>
+              </div>
+              <div class="analytics-chart-legend">
+                <span class="analytics-legend-dot" style="background: #22d3ee;"></span>
+                <span class="analytics-legend-label">Visitas</span>
+              </div>
             </div>
-            <div class="chart-container">
+            <div class="analytics-chart-body">
               <canvas #analyticsVisits></canvas>
             </div>
           </div>
-          <div class="card chart-card">
-            <div class="card-header">
-              <h3>Ventas por Día</h3>
+          <div class="analytics-chart-card analytics-chart-side">
+            <div class="analytics-chart-header">
+              <div>
+                <h3 class="analytics-chart-title">Conversión</h3>
+                <span class="analytics-chart-sub">Tasa global</span>
+              </div>
             </div>
-            <div class="chart-container">
-              <canvas #analyticsSales></canvas>
+            <div class="analytics-chart-body analytics-chart-body-center">
+              <canvas #analyticsConversion></canvas>
             </div>
           </div>
         </div>
 
-        <div class="charts-row single">
-          <div class="card chart-card-sm">
-            <div class="card-header">
-              <h3>Tasa de Conversión</h3>
+        <!-- Ventas Chart (full width) -->
+        <div class="analytics-chart-card">
+          <div class="analytics-chart-header">
+            <div>
+              <h3 class="analytics-chart-title">Ventas por Día</h3>
+              <span class="analytics-chart-sub">Últimos 7 días</span>
             </div>
-            <div class="chart-container">
-              <canvas #analyticsConversion></canvas>
+            <div class="analytics-chart-legend">
+              <span class="analytics-legend-dot" style="background: #f472b6;"></span>
+              <span class="analytics-legend-label">Ventas</span>
             </div>
+          </div>
+          <div class="analytics-chart-body">
+            <canvas #analyticsSales></canvas>
           </div>
         </div>
       </section>
