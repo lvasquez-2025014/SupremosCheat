@@ -26,6 +26,13 @@ $text-muted: #64748b;
   &.active { display: block; }
 }
 
+:host {
+  ::ng-deep .section-content {
+    overflow: hidden !important;
+    overflow-y: hidden !important;
+  }
+}
+
 .discord-chat-section {
   display: flex;
   flex: 1;
