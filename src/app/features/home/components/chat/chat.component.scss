@@ -33,6 +33,7 @@ $text-muted: #64748b;
   overflow: hidden;
   background: $bg-main;
   position: relative;
+  margin: -24px;
 }
 
 // Server Bar
@@ -1508,6 +1509,7 @@ $text-muted: #64748b;
 
 // Tablet (≤ 1024px)
 @media (max-width: 1024px) {
+  .discord-chat-section { margin: -20px; }
   .discord-server-bar { width: 56px; padding: 8px 0; }
   .discord-server-icon { width: 40px; height: 40px; }
   .discord-channels-panel { width: 200px; }
@@ -1517,6 +1519,7 @@ $text-muted: #64748b;
 
 // Small tablet / large phone (≤ 768px)
 @media (max-width: 768px) {
+  .discord-chat-section { margin: -16px; }
   .discord-channels-panel { width: 180px; }
   .discord-members-panel { display: none; }
   .discord-chat-header { padding: 0 12px; height: 44px; }
@@ -1532,6 +1535,7 @@ $text-muted: #64748b;
 
 // Mobile (≤ 640px)
 @media (max-width: 640px) {
+  .discord-chat-section { margin: -12px; }
   .chat-channels-toggle { display: flex !important; }
   .discord-server-bar { width: 48px; padding: 6px 0; }
   .discord-server-icon { width: 36px; height: 36px; font-size: 14px; }
