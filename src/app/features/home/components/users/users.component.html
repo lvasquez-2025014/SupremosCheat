@@ -94,13 +94,13 @@
                   </button>
                   <div class="us-dropdown-menu" *ngIf="usDropdownOpen === partner._id"
                        (click)="$event.stopPropagation()">
-                    <button class="us-dropdown-item" (click)="changeRole(partner, 'admin')">
+                    <button class="us-dropdown-item" (click)="changeUserRole(partner, 'admin')">
                       <span class="us-dot us-dot-admin"></span>Admin
                     </button>
-                    <button class="us-dropdown-item" (click)="changeRole(partner, 'vendedor')">
+                    <button class="us-dropdown-item" (click)="changeUserRole(partner, 'vendedor')">
                       <span class="us-dot us-dot-vendor"></span>Vendedor
                     </button>
-                    <button class="us-dropdown-item" (click)="changeRole(partner, 'cliente')">
+                    <button class="us-dropdown-item" (click)="changeUserRole(partner, 'cliente')">
                       <span class="us-dot us-dot-client"></span>Cliente
                     </button>
                   </div>
@@ -143,6 +143,18 @@
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
             Agregar Socio
           </button>
+        </div>
+
+        <div class="us-toasts">
+          <div *ngFor="let t of usToasts; trackBy: trackByToastId" class="us-toast"
+               [class.us-toast-out]="t._removing">
+            <div class="us-toast-icon" [class]="'us-toast-' + t.type">
+              <svg *ngIf="t.type === 'success'" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              <svg *ngIf="t.type === 'error'" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+              <svg *ngIf="t.type === 'info'" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+            <span class="us-toast-msg">{{ t.message }}</span>
+          </div>
         </div>
       </section>
 
