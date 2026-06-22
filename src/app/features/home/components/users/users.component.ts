@@ -52,26 +52,25 @@ export class UsersComponent implements OnInit, OnDestroy {
   sociosTitleChars: string[] = [];
   private sociosSubtitleInterval: any;
   sociosSubtitleAnimState: 'visible' | 'exit' | 'enter' = 'visible';
-  sociosCurrentSubtitle = 'Gestiona los socios del panel';
+  sociosCurrentSubtitle = 'Gestiona los vendedores del panel';
   private sociosSubtitleMessages = [
-    'Gestiona los socios del panel',
-    'Administra roles de tu equipo',
+    'Gestiona los vendedores del panel',
+    'Administra roles de vendedores',
     'Control total de acceso',
     'Monitorea la actividad en tiempo real',
-    'Agrega, edita y elimina socios',
-    'Panel de administración avanzado',
+    'Agrega, edita y elimina vendedores',
+    'Panel de vendedores avanzado',
     'Seguridad y accesos centralizados'
   ];
   private sociosSubIdx = 0;
 
   get filteredSocios(): any[] {
-    const base = this.partners;
+    const base = this.partners.filter(u => u.role === 'vendedor');
     const q = this.sociosSearchQuery.toLowerCase().trim();
     if (!q) return base;
     return base.filter(u => u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
   }
 
-  get sociosAdminCount(): number { return this.partners.filter(u => u.role === 'admin').length; }
   get sociosVendorCount(): number { return this.partners.filter(u => u.role === 'vendedor').length; }
 
   showPartnerModal = false;
