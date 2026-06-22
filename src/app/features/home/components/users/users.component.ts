@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, HostListener } from '@angular/core';
 import { AuthService } from '@core/services/auth.service';
 import { ApiService } from '@core/services/api.service';
+import { PanelStateService } from '@core/services/panel-state.service';
 
 @Component({
   selector: 'app-users',
@@ -93,7 +94,8 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   constructor(
     private auth: AuthService,
-    private api: ApiService
+    private api: ApiService,
+    public panelState: PanelStateService
   ) {}
 
   ngOnInit(): void {

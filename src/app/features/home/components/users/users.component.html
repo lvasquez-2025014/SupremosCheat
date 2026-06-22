@@ -148,7 +148,7 @@
       </section>
 
       <!-- ==================== USUARIOS (Admin) ==================== -->
-      <section *ngIf="isAdmin" class="section-content usuarios-section">
+<section *ngIf="isAdmin && panelState.activeSection === 'usuarios'" class="section-content usuarios-section">
         <!-- Animated Title -->
         <div class="usuarios-header">
           <div class="title-container">
