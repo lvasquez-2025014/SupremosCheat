@@ -238,7 +238,7 @@
       </div>
     </header>
 
-    <main class="page-content">
+    <main class="page-content" [class.no-padding]="activeSection === 'chat'">
 
       <app-dashboard *ngIf="activeSection === 'dashboard'"></app-dashboard>
 
