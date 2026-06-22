@@ -48,6 +48,32 @@ export class UsersComponent implements OnInit, OnDestroy {
   ];
   private usSubIdx = 0;
 
+  sociosSearchQuery = '';
+  sociosTitleChars: string[] = [];
+  private sociosSubtitleInterval: any;
+  sociosSubtitleAnimState: 'visible' | 'exit' | 'enter' = 'visible';
+  sociosCurrentSubtitle = 'Gestiona los socios del panel';
+  private sociosSubtitleMessages = [
+    'Gestiona los socios del panel',
+    'Administra roles de tu equipo',
+    'Control total de acceso',
+    'Monitorea la actividad en tiempo real',
+    'Agrega, edita y elimina socios',
+    'Panel de administración avanzado',
+    'Seguridad y accesos centralizados'
+  ];
+  private sociosSubIdx = 0;
+
+  get filteredSocios(): any[] {
+    const base = this.partners;
+    const q = this.sociosSearchQuery.toLowerCase().trim();
+    if (!q) return base;
+    return base.filter(u => u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
+  }
+
+  get sociosAdminCount(): number { return this.partners.filter(u => u.role === 'admin').length; }
+  get sociosVendorCount(): number { return this.partners.filter(u => u.role === 'vendedor').length; }
+
   showPartnerModal = false;
   editingPartner: any = null;
   partnerForm = { name: '', email: '', password: '' };
@@ -76,6 +102,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.isAdmin = this.user?.role === 'admin';
     this.isVendor = this.user?.role === 'vendedor';
     this.titleChars = 'Usuarios'.split('');
+    this.sociosTitleChars = 'Socios'.split('');
 
     if (this.isAdmin) {
       this.loadPartners();
@@ -83,6 +110,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     }
     this.loadUsers();
     this.initUsSubtitleRotation();
+    this.initSociosSubtitleRotation();
 
     setTimeout(() => {
       this.loading = false;
@@ -91,6 +119,7 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.usSubtitleInterval) clearInterval(this.usSubtitleInterval);
+    if (this.sociosSubtitleInterval) clearInterval(this.sociosSubtitleInterval);
   }
 
   loadPartners(): void {
@@ -252,6 +281,20 @@ export class UsersComponent implements OnInit, OnDestroy {
         this.subtitleAnimState = 'enter';
         setTimeout(() => {
           this.subtitleAnimState = 'visible';
+        }, 50);
+      }, 500);
+    }, 4000);
+  }
+
+  private initSociosSubtitleRotation(): void {
+    this.sociosSubtitleInterval = setInterval(() => {
+      this.sociosSubtitleAnimState = 'exit';
+      setTimeout(() => {
+        this.sociosSubIdx = (this.sociosSubIdx + 1) % this.sociosSubtitleMessages.length;
+        this.sociosCurrentSubtitle = this.sociosSubtitleMessages[this.sociosSubIdx];
+        this.sociosSubtitleAnimState = 'enter';
+        setTimeout(() => {
+          this.sociosSubtitleAnimState = 'visible';
         }, 50);
       }, 500);
     }, 4000);
