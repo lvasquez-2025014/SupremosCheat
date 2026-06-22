@@ -689,7 +689,7 @@ $topbar-height: 64px;
     radial-gradient(ellipse at 90% 90%, rgba($pink, 0.03) 0%, transparent 50%);
 
   &.chat-active {
-    overflow: visible;
+    padding: 0;
   }
 }
 
