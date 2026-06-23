@@ -251,12 +251,20 @@ $topbar-height: 64px;
   justify-content: center;
   color: white;
   flex-shrink: 0;
+  overflow: hidden;
   box-shadow: 0 0 20px rgba($cyan, 0.3), 0 0 40px rgba($pink, 0.15);
   transition: box-shadow 0.3s ease;
 
   &:hover {
     box-shadow: 0 0 25px rgba($cyan, 0.5), 0 0 50px rgba($pink, 0.25);
   }
+}
+
+.logo-gif {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
 }
 
 .logo-text-wrap {
