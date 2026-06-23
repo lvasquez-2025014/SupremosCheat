@@ -26,8 +26,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   private clockInterval: any;
 
   get isClient(): boolean { return this.user?.role === 'cliente'; }
-  get isAdmin(): boolean { return this.user?.role === 'admin'; }
+  get isAdmin(): boolean { return this.user?.role === 'admin' || this.user?.role === 'superadmin'; }
   get isVendor(): boolean { return this.user?.role === 'vendedor'; }
+  get isSuperAdmin(): boolean { return this.user?.role === 'superadmin'; }
   get isGuest(): boolean { return !this.auth.isLoggedIn; }
 
   clientNavSections = [

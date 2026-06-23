@@ -886,6 +886,12 @@ $text-muted: #64748b;
   &.sm { font-size: 8px; padding: 1px 4px; }
 }
 
+.badge-superadmin {
+  background: linear-gradient(90deg, rgba(168, 85, 247, 0.25), rgba(192, 132, 252, 0.25));
+  color: #c084fc;
+  border: 1px solid rgba(168, 85, 247, 0.4);
+}
+
 .badge-admin {
   background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), rgba(244, 114, 182, 0.2));
   color: #fb7185;

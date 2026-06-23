@@ -83,6 +83,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   loading = true;
 
   get usAdminCount(): number { return this.allUsers.filter(u => u.role === 'admin').length; }
+  get usSuperAdminCount(): number { return this.allUsers.filter(u => u.role === 'superadmin').length; }
   get usVendorCount(): number { return this.allUsers.filter(u => u.role === 'vendedor').length; }
   get usClientCount(): number { return this.allUsers.filter(u => u.role === 'cliente').length; }
 
@@ -100,7 +101,7 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.user = this.auth.user;
-    this.isAdmin = this.user?.role === 'admin';
+    this.isAdmin = this.user?.role === 'admin' || this.user?.role === 'superadmin';
     this.isVendor = this.user?.role === 'vendedor';
     this.titleChars = 'Usuarios'.split('');
     this.sociosTitleChars = 'Socios'.split('');
@@ -333,6 +334,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   getRoleLabel(role: string): string {
+    if (role === 'superadmin') return 'SUPER ADMIN';
     if (role === 'admin') return 'ADMIN';
     if (role === 'vendedor') return 'VENDEDOR';
     return 'CLIENTE';

@@ -100,7 +100,7 @@
             <h3 class="discord-header-name">{{ chatView === 'dms' ? (getOtherMember(activeChat)?.name || activeChat.name) : activeChat.name }}</h3>
             <span class="discord-role-badge" *ngIf="chatView === 'dms'" [ngClass]="getRoleBadgeClass(getOtherMember(activeChat)?.role)">{{ getRoleLabel(getOtherMember(activeChat)?.role) }}</span>
           </div>
-          <p class="discord-header-desc">{{ chatView === 'dms' ? (getOtherMember(activeChat)?.role === 'admin' ? 'Administrador' : getOtherMember(activeChat)?.role === 'vendedor' ? 'Vendedor' : 'Cliente') : activeChat.description || 'Canal de texto' }}</p>
+          <p class="discord-header-desc">{{ chatView === 'dms' ? (getOtherMember(activeChat)?.role === 'superadmin' ? 'Super Administrador' : getOtherMember(activeChat)?.role === 'admin' ? 'Administrador' : getOtherMember(activeChat)?.role === 'vendedor' ? 'Vendedor' : 'Cliente') : activeChat.description || 'Canal de texto' }}</p>
         </div>
       </div>
       <div class="discord-chat-header-actions">
@@ -200,7 +200,7 @@
               <button class="discord-msg-action" (click)="copyMessageText(msg)" title="Copiar">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
               </button>
-              <button class="discord-msg-action danger" (click)="deleteMessage(msg)" title="Eliminar" *ngIf="isCurrentUser(msg.sender) || user?.role === 'admin'">
+              <button class="discord-msg-action danger" (click)="deleteMessage(msg)" title="Eliminar" *ngIf="isCurrentUser(msg.sender) || user?.role === 'admin' || user?.role === 'superadmin'">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2"/></svg>
               </button>
             </div>

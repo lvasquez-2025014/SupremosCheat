@@ -44,7 +44,7 @@ export class ProductsComponent implements OnInit {
   get isGuest(): boolean { return !this.auth.isLoggedIn; }
   get isAdmin(): boolean {
     const user = this.auth.user;
-    return user?.role === 'admin';
+    return user?.role === 'admin' || user?.role === 'superadmin';
   }
 
   ngOnInit(): void {

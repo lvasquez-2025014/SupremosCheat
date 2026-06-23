@@ -316,6 +316,11 @@ $text-muted: #64748b;
 }
 
 .us-icon-total { background: rgba(255, 255, 255, 0.03); svg { color: #94a3b8; } }
+.us-icon-superadmin {
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.2);
+  svg { color: #a855f7; }
+}
 .us-icon-admin {
   background: rgba(244, 63, 94, 0.1);
   border: 1px solid rgba(244, 63, 94, 0.2);
@@ -338,6 +343,7 @@ $text-muted: #64748b;
   color: white;
 }
 
+.us-stat-superadmin { color: #a855f7; }
 .us-stat-admin { color: #f43f5e; }
 .us-stat-vendor { color: $cyan; }
 .us-stat-client { color: #a3e635; }
@@ -529,6 +535,13 @@ $text-muted: #64748b;
   }
 }
 
+.us-role-superadmin {
+  color: #a855f7;
+  border-color: rgba(168, 85, 247, 0.25);
+  background: rgba(168, 85, 247, 0.1);
+  box-shadow: 0 0 12px rgba(168, 85, 247, 0.15);
+}
+
 .us-role-admin {
   color: #f43f5e;
   border-color: rgba(244, 63, 94, 0.25);
@@ -598,6 +611,7 @@ $text-muted: #64748b;
   border-radius: 50%;
   flex-shrink: 0;
 }
+.us-dot-superadmin { background: #a855f7; box-shadow: 0 0 6px rgba(168, 85, 247, 0.6); }
 .us-dot-admin { background: #f43f5e; box-shadow: 0 0 6px rgba(244, 63, 94, 0.6); }
 .us-dot-vendor { background: $cyan; box-shadow: 0 0 6px rgba(34, 211, 238, 0.6); }
 .us-dot-client { background: #a3e635; box-shadow: 0 0 6px rgba(163, 230, 53, 0.6); }

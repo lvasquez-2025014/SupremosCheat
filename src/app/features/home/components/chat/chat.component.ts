@@ -443,12 +443,14 @@ export class ChatComponent implements OnInit, OnDestroy {
   }
 
   getRoleBadgeClass(role: string): string {
+    if (role === 'superadmin') return 'badge-superadmin';
     if (role === 'admin') return 'badge-admin';
     if (role === 'vendedor') return 'badge-vendor';
     return 'badge-client';
   }
 
   getRoleLabel(role: string): string {
+    if (role === 'superadmin') return 'SUPER ADMIN';
     if (role === 'admin') return 'ADMIN';
     if (role === 'vendedor') return 'VENDEDOR';
     return 'CLIENTE';
