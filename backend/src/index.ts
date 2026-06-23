@@ -29,6 +29,8 @@ applySecurity(app);
 const allowedOrigins = [
   'http://localhost:4200',
   'http://127.0.0.1:4200',
+  'https://supremos-cheats.vercel.app',
+  'https://supremo-cheats.vercel.app',
 ];
 if (process.env.FRONTEND_URL) {
   allowedOrigins.push(process.env.FRONTEND_URL);

@@ -1,6 +1,6 @@
 import { Router, Response } from 'express';
 import { authenticate, authorize, AuthRequest } from '../middleware/auth.middleware';
-import { OrderModel } from '../models/order.model';
+import { OrderModel, OrderStatus } from '../models/order.model';
 
 const router = Router();
 
@@ -40,13 +40,13 @@ router.get('/purchases', authenticate, authorize('admin', 'vendedor', 'cliente')
     const skip = (page - 1) * limit;
 
     const [orders, total] = await Promise.all([
-      OrderModel.find({ buyer: req.userId, status: { $ne: 'cancelled' } })
+      OrderModel.find({ buyer: req.userId, status: { $ne: OrderStatus.CANCELLED } })
         .populate('product', 'name category')
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
         .lean(),
-      OrderModel.countDocuments({ buyer: req.userId, status: { $ne: 'cancelled' } }),
+      OrderModel.countDocuments({ buyer: req.userId, status: { $ne: OrderStatus.CANCELLED } }),
     ]);
 
     const totalSpent = orders.reduce((sum, o) => sum + (o.amount || 0), 0);
