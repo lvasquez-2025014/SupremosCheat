@@ -66,13 +66,13 @@ export class UsersComponent implements OnInit, OnDestroy {
   private sociosSubIdx = 0;
 
   get filteredSocios(): any[] {
-    const base = this.partners.filter(u => u.role === 'vendedor');
+    const base = this.partners.filter(u => String(u.role) === 'vendedor');
     const q = this.sociosSearchQuery.toLowerCase().trim();
     if (!q) return base;
     return base.filter(u => u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
   }
 
-  get sociosVendorCount(): number { return this.partners.filter(u => u.role === 'vendedor').length; }
+  get sociosVendorCount(): number { return this.partners.filter(u => String(u.role) === 'vendedor').length; }
 
   showPartnerModal = false;
   editingPartner: any = null;
@@ -125,22 +125,28 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   loadPartners(): void {
     this.api.get<any>('admin/users').subscribe({
-      next: (res) => { this.partners = (res.data || []).filter((u: any) => u._id !== this.user?.id && u.role !== 'cliente'); },
-      error: () => {}
+      next: (res) => {
+        const userId = String(this.user?.id || this.user?._id || '');
+        this.partners = (res.data || []).filter((u: any) => {
+          const isSelf = String(u._id || u.id) === userId;
+          return !isSelf && u.role !== 'cliente';
+        });
+      },
+      error: (err) => { console.error('[UsersComponent] Error loading partners:', err); }
     });
   }
 
   loadClientes(): void {
     this.api.get<any>('admin/users').subscribe({
       next: (res) => { this.clientes = (res.data || []).filter((u: any) => u.role === 'cliente'); },
-      error: () => {}
+      error: (err) => { console.error('[UsersComponent] Error loading clientes:', err); }
     });
   }
 
   loadUsers(): void {
     this.api.get<any>('admin/users').subscribe({
       next: (res) => { this.allUsers = (res.data || []); },
-      error: () => {}
+      error: (err) => { console.error('[UsersComponent] Error loading users:', err); }
     });
   }
 
