@@ -202,10 +202,8 @@ export class ProductsComponent implements OnInit {
 
   buyProduct(product: any): void {
     if (this.isGuest) { this.router.navigate(['/auth/login']); return; }
-    if (this.isAdmin) {
-      this.selectedProduct = product;
-      this.showProductDetail = true;
-    }
+    this.selectedProduct = product;
+    this.showProductDetail = true;
   }
 
   closeProductDetail(): void {

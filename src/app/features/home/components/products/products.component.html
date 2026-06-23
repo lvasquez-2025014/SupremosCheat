@@ -171,10 +171,10 @@
     </div>
     <div class="modal-footer">
       <button class="btn-outline" (click)="closeProductDetail()">Cerrar</button>
-      <button class="btn-outline" style="border-color: rgba(239,68,68,0.3); color: #ef4444;" (click)="deleteFromDetail()">
+      <button *ngIf="isAdmin" class="btn-outline" style="border-color: rgba(239,68,68,0.3); color: #ef4444;" (click)="deleteFromDetail()">
         <i class="fas fa-trash"></i> Eliminar
       </button>
-      <button class="btn-primary" (click)="editFromDetail()">
+      <button *ngIf="isAdmin" class="btn-primary" (click)="editFromDetail()">
         <i class="fas fa-edit"></i> Editar
       </button>
     </div>
