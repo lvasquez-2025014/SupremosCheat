@@ -61,7 +61,10 @@ export async function login(req: AuthRequest, res: Response): Promise<void> {
       return;
     }
 
-    const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
+    const isEmail = email.includes('@');
+    const user = isEmail
+      ? await UserModel.findOne({ email: email.toLowerCase().trim() })
+      : await UserModel.findOne({ name: { $regex: new RegExp(`^${escapeRegex(email.trim())}$`, 'i') } });
     if (!user) {
       if ((req as any).trackLoginAttempt) (req as any).trackLoginAttempt(false);
       res.status(401).json({ message: 'Credenciales inválidas' });
