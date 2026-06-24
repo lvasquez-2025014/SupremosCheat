@@ -2,15 +2,17 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { SharedModule } from '@shared/shared.module';
 import { LoginComponent } from './login/login.component';
+import { ForgotPasswordComponent } from './forgot-password/forgot-password.component';
 
 const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: LoginComponent },
+  { path: 'forgot-password', component: ForgotPasswordComponent },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
 ];
 
 @NgModule({
-  declarations: [LoginComponent],
+  declarations: [LoginComponent, ForgotPasswordComponent],
   imports: [SharedModule, RouterModule.forChild(routes)],
 })
 export class AuthModule {}

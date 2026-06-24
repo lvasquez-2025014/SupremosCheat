@@ -44,6 +44,12 @@ export class User extends TimeStamps {
 
   @prop({ trim: true, default: '' })
   phone!: string;
+
+  @prop({ default: null })
+  resetToken!: string | null;
+
+  @prop({ default: null })
+  resetTokenExpiry!: Date | null;
 }
 
 export const UserModel = getModelForClass(User);

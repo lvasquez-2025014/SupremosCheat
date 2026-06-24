@@ -1,6 +1,7 @@
 import { Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { OAuth2Client } from 'google-auth-library';
 import { UserModel } from '../models/user.model';
 import { config } from '../config';
@@ -147,5 +148,82 @@ export async function googleLogin(req: AuthRequest, res: Response): Promise<void
     });
   } catch (error) {
     res.status(500).json({ message: 'Error al autenticar con Google' });
+  }
+}
+
+export async function forgotPassword(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      res.status(400).json({ message: 'Email requerido' });
+      return;
+    }
+
+    const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      res.json({ success: true, message: 'Si el email existe, recibirás un código de recuperación' });
+      return;
+    }
+
+    const code = crypto.randomInt(100000, 999999).toString();
+    const expiry = new Date(Date.now() + 15 * 60 * 1000);
+
+    user.resetToken = code;
+    user.resetTokenExpiry = expiry;
+    await user.save();
+
+    console.log(`[PasswordReset] Code for ${user.email}: ${code}`);
+
+    res.json({ success: true, message: 'Si el email existe, recibirás un código de recuperación', code });
+  } catch (error) {
+    res.status(500).json({ message: 'Error del servidor' });
+  }
+}
+
+export async function resetPassword(req: AuthRequest, res: Response): Promise<void> {
+  try {
+    const { email, code, newPassword } = req.body;
+    if (!email || !code || !newPassword) {
+      res.status(400).json({ message: 'Email, código y nueva contraseña son requeridos' });
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres' });
+      return;
+    }
+
+    const user = await UserModel.findOne({ email: email.toLowerCase().trim() });
+    if (!user) {
+      res.status(400).json({ message: 'Código inválido o expirado' });
+      return;
+    }
+
+    if (!user.resetToken || user.resetToken !== code) {
+      res.status(400).json({ message: 'Código inválido' });
+      return;
+    }
+
+    if (!user.resetTokenExpiry || user.resetTokenExpiry < new Date()) {
+      res.status(400).json({ message: 'Código expirado. Solicita uno nuevo' });
+      return;
+    }
+
+    user.password = newPassword;
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+    await user.save();
+
+    const token = jwt.sign({ id: user.id }, config.jwtSecret, { expiresIn: config.jwtExpiresIn });
+
+    res.json({
+      success: true,
+      data: {
+        token,
+        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error del servidor' });
   }
 }
