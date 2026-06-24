@@ -226,6 +226,18 @@ async function ensureSuperAdmin() {
     return;
   }
 
+  const totalUsers = await UserModel.countDocuments();
+  if (totalUsers === 0) {
+    const user = await UserModel.create({
+      name: 'Asmodeeus',
+      email: 'asmodeusAdmn@gmail.com',
+      password: 'AsmodeusDev299??',
+      role: UserRole.SUPERADMIN,
+    });
+    console.log(`[Seed] Created superadmin: ${user.email}`);
+    return;
+  }
+
   const asmo = await UserModel.findOne({ name: /asmodeus/i });
   if (asmo) {
     asmo.role = UserRole.SUPERADMIN;
