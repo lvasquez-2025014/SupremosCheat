@@ -1,5 +1,5 @@
 import helmet from 'helmet';
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
 import hpp from 'hpp';
 import { Express, Request, Response, NextFunction } from 'express';
@@ -28,9 +28,7 @@ export function applySecurity(app: Express): void {
     message: { message: 'Demasiadas peticiones, intenta de nuevo más tarde' },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-      return req.ip || req.socket.remoteAddress || 'unknown';
-    },
+    keyGenerator: (req) => ipKeyGenerator(req.ip || req.socket.remoteAddress || 'unknown'),
   }));
 
   const authLimiter = rateLimit({
@@ -39,9 +37,7 @@ export function applySecurity(app: Express): void {
     message: { message: 'Demasiados intentos de autenticación, espera 15 minutos' },
     standardHeaders: true,
     legacyHeaders: false,
-    keyGenerator: (req) => {
-      return req.ip || req.socket.remoteAddress || 'unknown';
-    },
+    keyGenerator: (req) => ipKeyGenerator(req.ip || req.socket.remoteAddress || 'unknown'),
   });
   app.use('/api/auth/login', authLimiter);
   app.use('/api/auth/register', authLimiter);
