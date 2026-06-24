@@ -64,6 +64,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         { name: 'Productos', icon: 'fas fa-box', section: 'productos' },
         { name: 'Pedidos', icon: 'fas fa-shopping-cart', section: 'pedidos' },
         { name: 'Ganancias', icon: 'fas fa-wallet', section: 'ganancias' },
+        { name: 'Chat', icon: 'fas fa-comments', section: 'chat' },
       ]
     },
     {

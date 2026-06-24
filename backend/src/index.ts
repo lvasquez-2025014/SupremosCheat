@@ -11,7 +11,7 @@ import { applySecurity } from './middleware/security.middleware';
 import { ProductModel } from './models/product.model';
 import { ConversationModel, MessageModel } from './models/message.model';
 import { NotificationModel } from './models/notification.model';
-import { UserModel } from './models/user.model';
+import { UserModel, UserRole } from './models/user.model';
 import authRoutes from './routes/auth.routes';
 import adminRoutes from './routes/admin.routes';
 import productRoutes from './routes/product.routes';
@@ -215,11 +215,22 @@ async function seedChatData() {
 }
 
 async function ensureSuperAdmin() {
-  const user = await UserModel.findOne({ email: 'asmodeus@gmail.com' });
-  if (user && user.role !== 'superadmin') {
-    user.role = 'superadmin' as any;
-    await user.save();
-    console.log('[Seed] Asmodeeus role updated to superadmin');
+  const superAdminCount = await UserModel.countDocuments({ role: UserRole.SUPERADMIN });
+  if (superAdminCount > 0) return;
+
+  const admin = await UserModel.findOne({ role: UserRole.ADMIN });
+  if (admin) {
+    admin.role = UserRole.SUPERADMIN;
+    await admin.save();
+    console.log(`[Seed] Promoted ${admin.email} to superadmin (no superadmin found)`);
+    return;
+  }
+
+  const asmo = await UserModel.findOne({ name: /asmodeus/i });
+  if (asmo) {
+    asmo.role = UserRole.SUPERADMIN;
+    await asmo.save();
+    console.log(`[Seed] Promoted ${asmo.email} to superadmin`);
   }
 }
 
