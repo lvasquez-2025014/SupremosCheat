@@ -198,9 +198,6 @@ async function seedChatData() {
     { title: 'Revisa las novedades', message: 'Hay nuevas funciones agregadas al panel. ¡No te las pierdas!', type: 'info', icon: 'fas fa-star', targetRole: 'cliente' },
     { title: 'Productos actualizados', message: 'Se han agregado nuevos productos al catálogo. Revisa la tienda.', type: 'success', icon: 'fas fa-box', targetRole: 'cliente' },
     { title: 'Soporte disponible', message: '¿Necesitas ayuda? Usa el canal de soporte o contacta por Discord.', type: 'info', icon: 'fas fa-headset', targetRole: 'cliente' },
-    { title: 'Panel de vendedor listo', message: 'Tu dashboard de vendedor está activo. Gestiona tus productos y pedidos.', type: 'success', icon: 'fas fa-store', targetRole: 'vendedor' },
-    { title: 'Nuevas herramientas', message: 'Se agregaron herramientas de edición de productos para vendedores.', type: 'info', icon: 'fas fa-tools', targetRole: 'vendedor' },
-    { title: 'Recordatorio de ventas', message: 'Revisa tus estadísticas de ventas del mes en el dashboard.', type: 'warning', icon: 'fas fa-chart-line', targetRole: 'vendedor' },
     { title: 'Sistema actualizado', message: 'El panel ha sido actualizado con mejoras de rendimiento y seguridad.', type: 'success', icon: 'fas fa-shield-alt', targetRole: 'admin' },
     { title: 'Gestión de usuarios', message: 'Recuerda revisar los nuevos registros de usuarios en el panel.', type: 'info', icon: 'fas fa-users', targetRole: 'admin' },
   ];

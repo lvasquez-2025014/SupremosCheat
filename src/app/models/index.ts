@@ -12,7 +12,7 @@ export interface PaginatedResponse<T> extends ApiResponse<T> {
   totalPages: number;
 }
 
-export type UserRole = 'superadmin' | 'admin' | 'vendedor' | 'cliente';
+export type UserRole = 'superadmin' | 'admin' | 'cliente';
 
 export interface User {
   _id: string;
@@ -136,7 +136,7 @@ export interface Notification {
 export interface AdminStats {
   totalUsers: number;
   admins: number;
-  vendedores: number;
+  superadmins: number;
   clientes: number;
   totalProducts: number;
   totalSales: number;

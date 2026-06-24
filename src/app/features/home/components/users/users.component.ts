@@ -11,9 +11,7 @@ import { PanelStateService } from '@core/services/panel-state.service';
 export class UsersComponent implements OnInit, OnDestroy {
   user: any = null;
   isAdmin = false;
-  isVendor = false;
 
-  partners: any[] = [];
   clientes: any[] = [];
   allUsers: any[] = [];
 
@@ -24,7 +22,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   usNewName = '';
   usNewEmail = '';
   usNewPassword = '';
-  usNewRole = 'vendedor';
+  usNewRole = 'admin';
   usSaving = false;
   usErrors: any = {};
   usDropdownOpen: string | null = null;
@@ -49,31 +47,6 @@ export class UsersComponent implements OnInit, OnDestroy {
   ];
   private usSubIdx = 0;
 
-  sociosSearchQuery = '';
-  sociosTitleChars: string[] = [];
-  private sociosSubtitleInterval: any;
-  sociosSubtitleAnimState: 'visible' | 'exit' | 'enter' = 'visible';
-  sociosCurrentSubtitle = 'Gestiona los vendedores del panel';
-  private sociosSubtitleMessages = [
-    'Gestiona los vendedores del panel',
-    'Administra roles de vendedores',
-    'Control total de acceso',
-    'Monitorea la actividad en tiempo real',
-    'Agrega, edita y elimina vendedores',
-    'Panel de vendedores avanzado',
-    'Seguridad y accesos centralizados'
-  ];
-  private sociosSubIdx = 0;
-
-  get filteredSocios(): any[] {
-    const base = this.partners.filter(u => String(u.role) === 'vendedor');
-    const q = this.sociosSearchQuery.toLowerCase().trim();
-    if (!q) return base;
-    return base.filter(u => u.name?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q));
-  }
-
-  get sociosVendorCount(): number { return this.partners.filter(u => String(u.role) === 'vendedor').length; }
-
   showPartnerModal = false;
   editingPartner: any = null;
   partnerForm = { name: '', email: '', password: '' };
@@ -84,7 +57,6 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   get usAdminCount(): number { return this.allUsers.filter(u => u.role === 'admin').length; }
   get usSuperAdminCount(): number { return this.allUsers.filter(u => u.role === 'superadmin').length; }
-  get usVendorCount(): number { return this.allUsers.filter(u => u.role === 'vendedor').length; }
   get usClientCount(): number { return this.allUsers.filter(u => u.role === 'cliente').length; }
 
   get filteredUsers(): any[] {
@@ -102,17 +74,13 @@ export class UsersComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.user = this.auth.user;
     this.isAdmin = this.user?.role === 'admin' || this.user?.role === 'superadmin';
-    this.isVendor = this.user?.role === 'vendedor';
     this.titleChars = 'Usuarios'.split('');
-    this.sociosTitleChars = 'Socios'.split('');
 
     if (this.isAdmin) {
-      this.loadPartners();
       this.loadClientes();
     }
     this.loadUsers();
     this.initUsSubtitleRotation();
-    this.initSociosSubtitleRotation();
 
     setTimeout(() => {
       this.loading = false;
@@ -121,20 +89,6 @@ export class UsersComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     if (this.usSubtitleInterval) clearInterval(this.usSubtitleInterval);
-    if (this.sociosSubtitleInterval) clearInterval(this.sociosSubtitleInterval);
-  }
-
-  loadPartners(): void {
-    this.api.get<any>('admin/users').subscribe({
-      next: (res) => {
-        const userId = String(this.user?.id || this.user?._id || '');
-        this.partners = (res.data || []).filter((u: any) => {
-          const isSelf = String(u._id || u.id) === userId;
-          return !isSelf && u.role !== 'cliente';
-        });
-      },
-      error: (err) => { console.error('[UsersComponent] Error loading partners:', err); }
-    });
   }
 
   loadClientes(): void {
@@ -161,7 +115,7 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.usNewName = '';
     this.usNewEmail = '';
     this.usNewPassword = '';
-    this.usNewRole = 'vendedor';
+    this.usNewRole = 'admin';
     this.usErrors = {};
     this.usModalShake = false;
   }
@@ -306,20 +260,6 @@ export class UsersComponent implements OnInit, OnDestroy {
     }, 4000);
   }
 
-  private initSociosSubtitleRotation(): void {
-    this.sociosSubtitleInterval = setInterval(() => {
-      this.sociosSubtitleAnimState = 'exit';
-      setTimeout(() => {
-        this.sociosSubIdx = (this.sociosSubIdx + 1) % this.sociosSubtitleMessages.length;
-        this.sociosCurrentSubtitle = this.sociosSubtitleMessages[this.sociosSubIdx];
-        this.sociosSubtitleAnimState = 'enter';
-        setTimeout(() => {
-          this.sociosSubtitleAnimState = 'visible';
-        }, 50);
-      }, 500);
-    }, 4000);
-  }
-
   getInitials(name: string): string {
     if (!name) return '?';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
@@ -348,79 +288,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   getRoleLabel(role: string): string {
     if (role === 'superadmin') return 'SUPER ADMIN';
     if (role === 'admin') return 'ADMIN';
-    if (role === 'vendedor') return 'VENDEDOR';
     return 'CLIENTE';
-  }
-
-  openPartnerModal(partner?: any): void {
-    this.partnerError = '';
-    this.partnerSuccess = '';
-    if (partner) {
-      this.editingPartner = partner;
-      this.partnerForm = { name: partner.name, email: partner.email, password: '' };
-    } else {
-      this.editingPartner = null;
-      this.partnerForm = { name: '', email: '', password: '' };
-    }
-    this.showPartnerModal = true;
-  }
-
-  closePartnerModal(): void {
-    this.showPartnerModal = false;
-    this.editingPartner = null;
-    this.partnerForm = { name: '', email: '', password: '' };
-    this.partnerError = '';
-    this.partnerSuccess = '';
-  }
-
-  savePartner(): void {
-    this.partnerError = '';
-    const { name, email, password } = this.partnerForm;
-    if (!name || !email) { this.partnerError = 'Nombre y email son requeridos'; return; }
-    if (!this.editingPartner && !password) { this.partnerError = 'La contraseña es requerida'; return; }
-
-    if (this.editingPartner) {
-      const body: any = { name, email };
-      if (password) body.password = password;
-      this.api.put<any>(`admin/users/${this.editingPartner._id}`, body).subscribe({
-        next: () => { this.partnerSuccess = 'Socio actualizado'; this.loadPartners(); setTimeout(() => this.closePartnerModal(), 1200); },
-        error: (err) => this.partnerError = err.error?.message || 'Error al actualizar'
-      });
-    } else {
-      this.api.post<any>('admin/users', { name, email, password, role: 'vendedor' }).subscribe({
-        next: () => { this.partnerSuccess = 'Socio creado'; this.loadPartners(); setTimeout(() => this.closePartnerModal(), 1200); },
-        error: (err) => { this.partnerError = err.error?.message || err.message || 'Error al crear socio'; }
-      });
-    }
-  }
-
-  deletePartner(partner: any): void {
-    const isSelf = String(partner._id || partner.id) === String(this.user?.id || this.user?._id);
-    if (isSelf) {
-      this.showUsToast('No puedes eliminar tu propia cuenta', 'error');
-      return;
-    }
-    if (!confirm(`¿Eliminar a ${partner.name}?`)) return;
-    this.api.delete<any>(`admin/users/${partner._id}`).subscribe({
-      next: () => this.loadPartners(),
-      error: () => {}
-    });
-  }
-
-  changeRole(partner: any, newRole: string): void {
-    const isSelf = String(partner._id || partner.id) === String(this.user?.id || this.user?._id);
-    if (isSelf) {
-      this.showUsToast('No puedes cambiar tu propio rol', 'error');
-      return;
-    }
-    const prevRole = partner.role;
-    this.api.put<any>(`admin/users/${partner._id}/role`, { role: newRole }).subscribe({
-      next: (res) => { partner.role = newRole; },
-      error: (err) => {
-        console.error('[changeRole] Error:', err);
-        partner.role = prevRole;
-      }
-    });
   }
 
   viewUserProfileById(userId: string): void {

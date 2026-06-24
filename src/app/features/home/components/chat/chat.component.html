@@ -100,7 +100,7 @@
             <h3 class="discord-header-name">{{ chatView === 'dms' ? (getOtherMember(activeChat)?.name || activeChat.name) : activeChat.name }}</h3>
             <span class="discord-role-badge" *ngIf="chatView === 'dms'" [ngClass]="getRoleBadgeClass(getOtherMember(activeChat)?.role)">{{ getRoleLabel(getOtherMember(activeChat)?.role) }}</span>
           </div>
-          <p class="discord-header-desc">{{ chatView === 'dms' ? (getOtherMember(activeChat)?.role === 'superadmin' ? 'Super Administrador' : getOtherMember(activeChat)?.role === 'admin' ? 'Administrador' : getOtherMember(activeChat)?.role === 'vendedor' ? 'Vendedor' : 'Cliente') : activeChat.description || 'Canal de texto' }}</p>
+          <p class="discord-header-desc">{{ chatView === 'dms' ? (getOtherMember(activeChat)?.role === 'superadmin' ? 'Super Administrador' : getOtherMember(activeChat)?.role === 'admin' ? 'Administrador' : 'Cliente') : activeChat.description || 'Canal de texto' }}</p>
         </div>
       </div>
       <div class="discord-chat-header-actions">

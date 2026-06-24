@@ -27,7 +27,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   get isClient(): boolean { return this.user?.role === 'cliente'; }
   get isAdmin(): boolean { return this.user?.role === 'admin' || this.user?.role === 'superadmin'; }
-  get isVendor(): boolean { return this.user?.role === 'vendedor'; }
   get isSuperAdmin(): boolean { return this.user?.role === 'superadmin'; }
   get isGuest(): boolean { return !this.auth.isLoggedIn; }
 
@@ -56,31 +55,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
   ];
 
-  vendorNavSections = [
-    {
-      title: 'NAVEGACIÓN',
-      items: [
-        { name: 'Inicio', icon: 'fas fa-home', section: 'dashboard' },
-        { name: 'Productos', icon: 'fas fa-box', section: 'productos' },
-        { name: 'Pedidos', icon: 'fas fa-shopping-cart', section: 'pedidos' },
-        { name: 'Ganancias', icon: 'fas fa-wallet', section: 'ganancias' },
-        { name: 'Chat', icon: 'fas fa-comments', section: 'chat' },
-      ]
-    },
-    {
-      title: 'MI CUENTA',
-      items: [
-        { name: 'Mi Perfil', icon: 'fas fa-user', section: 'mi-perfil' },
-      ]
-    },
-    {
-      title: 'SISTEMA',
-      items: [
-        { name: 'Cerrar Sesión', icon: 'fas fa-sign-out-alt', section: 'logout' },
-      ]
-    }
-  ];
-
   adminNavSections = [
     {
       title: 'NAVEGACIÓN',
@@ -94,7 +68,6 @@ export class HomeComponent implements OnInit, OnDestroy {
     {
       title: 'ADMINISTRACIÓN',
       items: [
-        { name: 'Socios', icon: 'fas fa-handshake', section: 'socios' },
         { name: 'Usuarios', icon: 'fas fa-users', section: 'usuarios' },
         { name: 'Analíticas', icon: 'fas fa-chart-line', section: 'analytics' },
         { name: 'Chat', icon: 'fas fa-comments', section: 'chat' },
@@ -266,7 +239,6 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   get activeNavSections() {
     if (this.isClient) return this.clientNavSections;
-    if (this.isVendor) return this.vendorNavSections;
     return this.adminNavSections;
   }
 

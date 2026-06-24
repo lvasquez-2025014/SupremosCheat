@@ -60,7 +60,7 @@ router.get('/', async (req, res: Response) => {
   }
 });
 
-router.get('/all', authenticate, authorize('admin', 'vendedor'), async (req: AuthRequest, res: Response) => {
+router.get('/all', authenticate, authorize('admin', 'superadmin'), async (req: AuthRequest, res: Response) => {
   try {
     await ProductModel.updateMany({ image: { $regex: /^data:image/ } }, { $set: { image: '' } });
     const page = Math.max(1, parseInt(req.query.page as string) || 1);

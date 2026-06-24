@@ -12,7 +12,7 @@ router.get('/stats', authenticate, authorize('admin', 'superadmin'), async (_req
   try {
     const totalUsers = await UserModel.countDocuments();
     const admins = await UserModel.countDocuments({ role: UserRole.ADMIN });
-    const vendedores = await UserModel.countDocuments({ role: UserRole.VENDEDOR });
+    const superadmins = await UserModel.countDocuments({ role: UserRole.SUPERADMIN });
     const clientes = await UserModel.countDocuments({ role: UserRole.CLIENTE });
 
     const products = await ProductModel.find().select('name sales prices').lean();
@@ -33,7 +33,7 @@ router.get('/stats', authenticate, authorize('admin', 'superadmin'), async (_req
     res.json({
       success: true,
       data: {
-        totalUsers, admins, vendedores, clientes,
+        totalUsers, admins, superadmins, clientes,
         totalProducts, totalSales, totalRevenue,
       },
     });
@@ -112,7 +112,7 @@ router.post('/users', authenticate, authorize('admin', 'superadmin'), async (req
     return;
   }
 
-  const validRole = Object.values(UserRole).includes(role) ? role : UserRole.VENDEDOR;
+  const validRole = Object.values(UserRole).includes(role) ? role : UserRole.ADMIN;
 
   const exists = await UserModel.findOne({ email: email.toLowerCase() });
   if (exists) {
