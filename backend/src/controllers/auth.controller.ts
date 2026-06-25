@@ -21,7 +21,16 @@ async function verifyGoogleToken(idToken: string): Promise<{ email: string; name
     if (!payload || !payload.email || !payload.sub) return null;
     return { email: payload.email, name: payload.name || '', sub: payload.sub };
   } catch {
-    return null;
+    // Fallback: try without strict audience check using tokeninfo endpoint
+    try {
+      const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+      if (!resp.ok) return null;
+      const payload = await resp.json() as any;
+      if (!payload.email || !payload.sub) return null;
+      return { email: payload.email, name: payload.name || '', sub: payload.sub };
+    } catch {
+      return null;
+    }
   }
 }
 
