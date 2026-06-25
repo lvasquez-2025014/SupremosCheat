@@ -227,6 +227,11 @@ export class UsersComponent implements OnInit, OnDestroy {
     return user.role === 'cliente';
   }
 
+  canEditUser(user: any): boolean {
+    if (this.isSuperAdmin) return true;
+    return user.role === 'cliente';
+  }
+
   openEditUser(user: any): void {
     this.editingUser = user;
     this.editName = user.name || '';
