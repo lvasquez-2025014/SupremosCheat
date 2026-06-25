@@ -11,7 +11,7 @@
 <div class="products-grid">
   <div class="product-card" *ngFor="let product of products">
     <div class="product-card-image">
-      <img *ngIf="product.image" [src]="product.image" [alt]="product.name" class="product-img" />
+      <img *ngIf="product.image" [src]="imageUrl + product.image" [alt]="product.name" class="product-img" />
       <div *ngIf="!product.image" class="product-img-placeholder">
         <i [class]="product.icon" class="product-icon-display"></i>
         <span class="product-img-label">Sin imagen</span>
@@ -166,7 +166,7 @@
     </div>
     <div class="modal-body">
       <div class="detail-image" *ngIf="selectedProduct.image">
-        <img [src]="selectedProduct.image" [alt]="selectedProduct.name">
+        <img [src]="imageUrl + selectedProduct.image" [alt]="selectedProduct.name">
       </div>
       <div class="detail-placeholder" *ngIf="!selectedProduct.image">
         <i [class]="selectedProduct.icon" class="detail-icon"></i>
