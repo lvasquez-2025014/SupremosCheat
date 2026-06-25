@@ -9,28 +9,37 @@ import { AuthRequest } from '../middleware/auth.middleware';
 import { logEvent } from '../services/logger';
 import { LogEventType } from '../models/log.model';
 
-const googleClient = new OAuth2Client(config.googleClientId);
-
 async function verifyGoogleToken(idToken: string): Promise<{ email: string; name: string; sub: string } | null> {
-  try {
-    const ticket = await googleClient.verifyIdToken({
-      idToken,
-      audience: config.googleClientId,
-    });
-    const payload = ticket.getPayload();
-    if (!payload || !payload.email || !payload.sub) return null;
-    return { email: payload.email, name: payload.name || '', sub: payload.sub };
-  } catch {
-    // Fallback: try without strict audience check using tokeninfo endpoint
+  const audiences: string[] = [];
+  if (config.firebase.projectId) audiences.push(config.firebase.projectId);
+  if (config.googleClientId) audiences.push(config.googleClientId);
+
+  for (const audience of audiences) {
     try {
-      const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
-      if (!resp.ok) return null;
-      const payload = await resp.json() as any;
-      if (!payload.email || !payload.sub) return null;
-      return { email: payload.email, name: payload.name || '', sub: payload.sub };
-    } catch {
+      const client = new OAuth2Client();
+      const ticket = await client.verifyIdToken({ idToken, audience });
+      const payload = ticket.getPayload();
+      if (payload && payload.email && payload.sub) {
+        return { email: payload.email, name: payload.name || '', sub: payload.sub };
+      }
+    } catch (err: any) {
+      console.log(`[GoogleAuth] verifyIdToken failed (audience=${audience}):`, err.message);
+    }
+  }
+
+  try {
+    const resp = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${idToken}`);
+    if (!resp.ok) {
+      const body = await resp.text();
+      console.log('[GoogleAuth] Tokeninfo failed:', resp.status, body);
       return null;
     }
+    const payload = await resp.json() as any;
+    if (!payload.email || !payload.sub) return null;
+    return { email: payload.email, name: payload.name || '', sub: payload.sub };
+  } catch (e2: any) {
+    console.log('[GoogleAuth] Tokeninfo fallback error:', e2.message);
+    return null;
   }
 }
 
