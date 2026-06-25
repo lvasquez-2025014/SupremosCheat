@@ -208,6 +208,15 @@ export class UsersComponent implements OnInit, OnDestroy {
     this.showConfirmDelete = false;
   }
 
+  canDeleteUser(user: any): boolean {
+    const isSelf = String(user._id || user.id) === String(this.user?.id || this.user?._id);
+    if (isSelf) return false;
+    if (this.isSuperAdmin) {
+      return user.role !== 'superadmin';
+    }
+    return user.role === 'cliente';
+  }
+
   executeDeleteUser(): void {
     if (!this.usUserToDelete) return;
     const user = this.usUserToDelete;
@@ -223,7 +232,7 @@ export class UsersComponent implements OnInit, OnDestroy {
         this.allUsers = this.allUsers.filter(u => u._id !== user._id);
         this.showConfirmDelete = false;
         this.usUserToDelete = null;
-        this.showUsToast(`Usuario "${name}" eliminado`, 'error');
+        this.showUsToast(`Usuario "${name}" eliminado`, 'success');
       },
       error: (err) => {
         this.showConfirmDelete = false;

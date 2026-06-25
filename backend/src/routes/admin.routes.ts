@@ -200,14 +200,23 @@ router.delete('/users/:id', authenticate, authorize('admin', 'superadmin'), asyn
     return;
   }
 
-  const target = await UserModel.findById(id).select('role');
+  const [target, requester] = await Promise.all([
+    UserModel.findById(id).select('role'),
+    UserModel.findById(req.userId).select('role'),
+  ]);
+
   if (!target) {
     res.status(404).json({ message: 'Usuario no encontrado' });
     return;
   }
 
-  if (target.role === 'admin') {
-    res.status(403).json({ message: 'No puedes eliminar a otro administrador' });
+  if (target.role === UserRole.SUPERADMIN) {
+    res.status(403).json({ message: 'No se puede eliminar a un superadmin' });
+    return;
+  }
+
+  if (requester?.role === UserRole.ADMIN && target.role === UserRole.ADMIN) {
+    res.status(403).json({ message: 'Un administrador no puede eliminar a otro administrador' });
     return;
   }
 
