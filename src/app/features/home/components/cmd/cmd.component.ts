@@ -380,7 +380,7 @@ export class CmdComponent implements OnInit, AfterViewChecked {
         this.pushLine('┌─ SERVIDOR ─────────────────────┐', 'success');
         this.pushLine(`│  Estado:     ACTIVO ✓`, 'success');
         this.pushLine(`│  Latencia:   ${ms}ms`, 'output');
-        this.pushLine(`│  URL:        supremo-cheats-api.onrender.com`, 'output');
+        this.pushLine(`│  URL:        asmodeus-developer-api.onrender.com`, 'output');
         this.pushLine('└────────────────────────────────┘', 'success');
         this.isExecuting = false;
       },
@@ -416,8 +416,8 @@ export class CmdComponent implements OnInit, AfterViewChecked {
 
   private cmdEnv(): void {
     this.pushLine('┌─ ENTORNO ──────────────────────────────────┐', 'output');
-    this.pushLine('│  Frontend URL:  supremos-cheat.vercel.app   │', 'output');
-    this.pushLine('│  Backend URL:   supremo-cheats-api.render   │', 'output');
+    this.pushLine('│  Frontend URL:  asmodeus-developer.vercel.app  │', 'output');
+    this.pushLine('│  Backend URL:   asmodeus-developer-api.render  │', 'output');
     this.pushLine('│  Base de datos: MongoDB Atlas (pagina)      │', 'output');
     this.pushLine('│  Auth:          Google OAuth + JWT           │', 'output');
     this.pushLine('│  Panel:         Angular 15                   │', 'output');
