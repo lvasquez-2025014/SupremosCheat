@@ -223,24 +223,7 @@ async function ensureSuperAdmin() {
     return;
   }
 
-  const totalUsers = await UserModel.countDocuments();
-  if (totalUsers === 0) {
-    const user = await UserModel.create({
-      name: 'Asmodeeus',
-      email: 'asmodeusAdmn@gmail.com',
-      password: 'AsmodeusDev299??',
-      role: UserRole.SUPERADMIN,
-    });
-    console.log(`[Seed] Created superadmin: ${user.email}`);
-    return;
-  }
-
-  const asmo = await UserModel.findOne({ name: /asmodeus/i });
-  if (asmo) {
-    asmo.role = UserRole.SUPERADMIN;
-    await asmo.save();
-    console.log(`[Seed] Promoted ${asmo.email} to superadmin`);
-  }
+  console.log('[Seed] No superadmin found. Create one via POST /api/auth/register then promote via admin panel.');
 }
 
 async function patchProductImages() {

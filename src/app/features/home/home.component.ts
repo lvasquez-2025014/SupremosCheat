@@ -139,12 +139,10 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   orders: any[] = [];
 
-  notifications = [
-    { id: 1, title: 'Bienvenido a Asmodeus Developer', message: 'Tu panel de control está listo para usar', time: 'Ahora', read: false, icon: 'fas fa-info-circle', color: 'cyan' }
-  ];
+  notifications: any[] = [];
 
   get unreadNotifications(): number {
-    return this.notifications.filter(n => !n.read).length;
+    return this.notifications.filter(n => !n.isRead).length;
   }
 
   // ============ PAYMENT MODAL ============
@@ -252,6 +250,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       this.loadClientOrders();
     }
     this.loadProducts();
+    this.loadNotifications();
     this.updateClock();
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
     if (!this.isClient) {
@@ -444,6 +443,13 @@ export class HomeComponent implements OnInit, OnDestroy {
   loadPartners(): void {
     this.api.get<any>('admin/users').subscribe({
       next: (res) => { this.partners = (res.data || []).filter((u: any) => u._id !== this.user?.id && u.role !== 'cliente'); },
+      error: () => {}
+    });
+  }
+
+  loadNotifications(): void {
+    this.api.get<any>('chat/notifications').subscribe({
+      next: (res) => { this.notifications = res.data || []; },
       error: () => {}
     });
   }
