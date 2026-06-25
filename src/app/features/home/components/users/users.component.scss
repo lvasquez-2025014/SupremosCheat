@@ -1089,11 +1089,49 @@ $text-muted: #64748b;
   }
 }
 
+.us-role-filter-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
 .us-role-filter {
   display: flex;
   gap: 6px;
-  margin-bottom: 16px;
   flex-wrap: wrap;
+}
+
+.us-btn-add-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #000;
+  background: linear-gradient(135deg, #22d3ee, #a3e635);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  &:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px rgba(34, 211, 238, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
 }
 
 .us-filter-btn {

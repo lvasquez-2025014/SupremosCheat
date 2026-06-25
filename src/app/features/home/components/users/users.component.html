@@ -72,12 +72,18 @@
           </div>
         </div>
 
-        <!-- Role Filter -->
-        <div class="us-role-filter">
-          <button class="us-filter-btn" [class.us-filter-active]="roleFilter === 'all'" (click)="setRoleFilter('all')">Todos</button>
-          <button class="us-filter-btn" [class.us-filter-active]="roleFilter === 'superadmin'" (click)="setRoleFilter('superadmin')">Super Admin</button>
-          <button class="us-filter-btn" [class.us-filter-active]="roleFilter === 'admin'" (click)="setRoleFilter('admin')">Admins</button>
-          <button class="us-filter-btn" [class.us-filter-active]="roleFilter === 'cliente'" (click)="setRoleFilter('cliente')">Clientes</button>
+        <!-- Role Filter + Add Button -->
+        <div class="us-role-filter-row">
+          <div class="us-role-filter">
+            <button class="us-filter-btn" [class.us-filter-active]="roleFilter === 'all'" (click)="setRoleFilter('all')">Todos</button>
+            <button class="us-filter-btn" [class.us-filter-active]="roleFilter === 'superadmin'" (click)="setRoleFilter('superadmin')">Super Admin</button>
+            <button class="us-filter-btn" [class.us-filter-active]="roleFilter === 'admin'" (click)="setRoleFilter('admin')">Admins</button>
+            <button class="us-filter-btn" [class.us-filter-active]="roleFilter === 'cliente'" (click)="setRoleFilter('cliente')">Clientes</button>
+          </div>
+          <button class="us-btn-add-user" (click)="openAddUserModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+            Nuevo Usuario
+          </button>
         </div>
 
         <!-- Search -->
