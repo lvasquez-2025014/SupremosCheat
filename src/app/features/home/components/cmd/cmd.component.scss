@@ -70,18 +70,10 @@
   font-size: 13px;
   line-height: 1.6;
   cursor: text;
+  scrollbar-width: none;
 
   &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 3px;
+    display: none;
   }
 }
 
@@ -133,6 +125,8 @@
   align-items: center;
   gap: 10px;
   margin-top: 2px;
+  cursor: text;
+  width: 100%;
 }
 
 .cmd-prompt {

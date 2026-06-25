@@ -1,4 +1,4 @@
-<section *ngIf="isSuperAdmin && panelState.activeSection === 'cmd'" class="section-content cmd-section" (click)="focusInput()">
+<section *ngIf="isSuperAdmin && panelState.activeSection === 'cmd'" class="section-content cmd-section">
   <div class="cmd-header">
     <div class="cmd-header-left">
       <div class="cmd-dots">
@@ -13,17 +13,18 @@
     </div>
   </div>
 
-  <div class="cmd-body" #cmdOutput>
+  <div class="cmd-body" #cmdOutput (scroll)="onBodyScroll()">
     <div *ngFor="let line of lines" class="cmd-line"
          [class.cmd-line-input]="line.type === 'input'"
          [class.cmd-line-output]="line.type === 'output'"
          [class.cmd-line-error]="line.type === 'error'"
-         [class.cmd-line-system]="line.type === 'system'">
+         [class.cmd-line-system]="line.type === 'system'"
+         [class.cmd-line-success]="line.type === 'success'">
       <span class="cmd-time" *ngIf="line.type === 'input'">{{ formatTime(line.timestamp) }}</span>
       <pre class="cmd-text">{{ line.text }}</pre>
     </div>
 
-    <div class="cmd-input-line">
+    <div class="cmd-input-line" (click)="focusInput()">
       <span class="cmd-time">{{ currentTimeStr }}</span>
       <span class="cmd-prompt">&gt;</span>
       <input #cmdInput

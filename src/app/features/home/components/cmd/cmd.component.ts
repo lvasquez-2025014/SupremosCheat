@@ -26,6 +26,7 @@ export class CmdComponent implements OnInit, AfterViewChecked {
   showCursor = true;
   isSuperAdmin = false;
   currentTimeStr = '';
+  private userIsScrolling = false;
 
   private cursorInterval: any;
 
@@ -54,7 +55,9 @@ export class CmdComponent implements OnInit, AfterViewChecked {
   }
 
   ngAfterViewChecked(): void {
-    this.scrollToBottom();
+    if (!this.userIsScrolling) {
+      this.scrollToBottom();
+    }
   }
 
   scrollToBottom(): void {
@@ -62,6 +65,13 @@ export class CmdComponent implements OnInit, AfterViewChecked {
       const el = this.cmdOutputRef.nativeElement;
       el.scrollTop = el.scrollHeight;
     }
+  }
+
+  onBodyScroll(): void {
+    if (!this.cmdOutputRef?.nativeElement) return;
+    const el = this.cmdOutputRef.nativeElement;
+    const atBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 40;
+    this.userIsScrolling = !atBottom;
   }
 
   focusInput(): void {
@@ -136,6 +146,8 @@ export class CmdComponent implements OnInit, AfterViewChecked {
         this.pushLine(`Comando no encontrado: "${command}". Escribe "help" para ver comandos.`, 'error');
     }
     this.pushLine('', 'output');
+    this.userIsScrolling = false;
+    setTimeout(() => this.focusInput(), 50);
   }
 
   private pushLine(text: string, type: CmdLine['type']): void {
