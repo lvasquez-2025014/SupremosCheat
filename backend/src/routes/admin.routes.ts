@@ -153,7 +153,7 @@ router.get('/users', authenticate, authorize('admin', 'superadmin'), async (req:
   }
 });
 
-router.put('/users/:id/role', authenticate, authorize('admin', 'superadmin'), async (req: AuthRequest, res: Response) => {
+router.put('/users/:id/role', authenticate, authorize('superadmin'), async (req: AuthRequest, res: Response) => {
   const { role } = req.body;
 
   if (!Object.values(UserRole).includes(role)) {

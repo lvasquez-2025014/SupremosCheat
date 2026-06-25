@@ -111,7 +111,7 @@
                     {{ getInitials(u.name) }}
                   </div>
                 </div>
-                <div class="us-role-select-wrap">
+                <div class="us-role-select-wrap" *ngIf="isSuperAdmin">
                   <button class="us-role-btn" [class]="'us-role-' + u.role"
                           (click)="toggleUserDropdown(u._id); $event.stopPropagation()">
                     <span>{{ getRoleLabel(u.role) }}</span>
@@ -130,6 +130,7 @@
                     </button>
                   </div>
                 </div>
+                <span *ngIf="!isSuperAdmin" class="us-role-badge" [class]="'us-role-' + u.role">{{ getRoleLabel(u.role) }}</span>
               </div>
               <div class="us-card-body">
                 <h3 class="us-card-name">{{ u.name }}</h3>

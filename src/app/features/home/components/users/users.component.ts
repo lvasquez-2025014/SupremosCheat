@@ -11,6 +11,7 @@ import { PanelStateService } from '@core/services/panel-state.service';
 export class UsersComponent implements OnInit, OnDestroy {
   user: any = null;
   isAdmin = false;
+  isSuperAdmin = false;
 
   clientes: any[] = [];
   allUsers: any[] = [];
@@ -79,6 +80,7 @@ export class UsersComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.user = this.auth.user;
     this.isAdmin = this.user?.role === 'admin' || this.user?.role === 'superadmin';
+    this.isSuperAdmin = this.user?.role === 'superadmin';
     this.titleChars = 'Usuarios'.split('');
 
     if (this.isAdmin) {
@@ -167,6 +169,11 @@ export class UsersComponent implements OnInit, OnDestroy {
   }
 
   changeUserRole(user: any, newRole: string): void {
+    if (!this.isSuperAdmin) {
+      this.usDropdownOpen = null;
+      this.showUsToast('Solo los Super Admins pueden cambiar roles', 'error');
+      return;
+    }
     if (user.role === newRole) { this.usDropdownOpen = null; return; }
     const isSelf = String(user._id || user.id) === String(this.user?.id || this.user?._id);
     if (isSelf) {

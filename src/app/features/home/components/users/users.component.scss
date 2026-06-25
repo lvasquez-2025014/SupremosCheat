@@ -516,6 +516,17 @@ $text-muted: #64748b;
   position: relative;
 }
 
+.us-role-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: 1px solid;
+  opacity: 0.85;
+}
+
 .us-role-btn {
   display: inline-flex;
   align-items: center;
