@@ -2164,6 +2164,50 @@ $topbar-height: 64px;
   50% { opacity: 1; transform: translateX(-50%) scale(1.1); }
 }
 
+.hero-particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: $cyan;
+  opacity: 0;
+  animation: particleFloat linear infinite;
+
+  &:nth-child(1) { left: 10%; animation-duration: 8s; animation-delay: 0s; width: 2px; height: 2px; background: $cyan; }
+  &:nth-child(2) { left: 25%; animation-duration: 10s; animation-delay: 1s; width: 4px; height: 4px; background: $lime; }
+  &:nth-child(3) { left: 40%; animation-duration: 7s; animation-delay: 2s; width: 2px; height: 2px; background: $cyan; }
+  &:nth-child(4) { left: 55%; animation-duration: 9s; animation-delay: 0.5s; width: 3px; height: 3px; background: rgba(139, 92, 246, 0.8); }
+  &:nth-child(5) { left: 70%; animation-duration: 11s; animation-delay: 3s; width: 2px; height: 2px; background: $lime; }
+  &:nth-child(6) { left: 85%; animation-duration: 8s; animation-delay: 1.5s; width: 4px; height: 4px; background: $cyan; }
+  &:nth-child(7) { left: 15%; animation-duration: 12s; animation-delay: 4s; width: 2px; height: 2px; background: rgba(139, 92, 246, 0.6); }
+  &:nth-child(8) { left: 60%; animation-duration: 9s; animation-delay: 2.5s; width: 3px; height: 3px; background: $lime; }
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(100%) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 0.6;
+  }
+  90% {
+    opacity: 0.3;
+  }
+  100% {
+    transform: translateY(-400px) scale(1);
+    opacity: 0;
+  }
+}
+
 .guest-hero-inner {
   max-width: 750px;
   margin: 0 auto;
