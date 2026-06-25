@@ -77,47 +77,42 @@ async function verifyGoogleToken(idToken: string): Promise<{ email: string; name
       return null;
     }
 
-    cachedKeys = null;
-    const keys = await getGooglePublicKeys();
-
-    let key = keys.find((k: any) => k.kid === header.kid);
-    if (!key) {
-      console.log('[GoogleAuth] No kid match. Trying all', keys.length, 'keys...');
-      const sigBuffer = base64UrlDecode(parts[2]);
-      const dataToVerify = parts[0] + '.' + parts[1];
-      for (const k of keys) {
-        try {
-          const publicKey = crypto.createPublicKey({ format: 'jwk', key: { kty: 'RSA', n: k.n, e: k.e } });
-          const verifier = crypto.createVerify('RSA-SHA256');
-          verifier.update(dataToVerify);
-          if (verifier.verify(publicKey, sigBuffer)) {
-            console.log('[GoogleAuth] Verified with key kid:', k.kid);
-            key = k;
-            break;
-          }
-        } catch {}
+    const apiKey = config.firebase.apiKey;
+    if (apiKey) {
+      try {
+        const resp = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ idToken }),
+        });
+        const data = await resp.json() as any;
+        if (resp.ok && data.users && data.users[0]) {
+          const u = data.users[0];
+          console.log('[GoogleAuth] Verified via Identity Toolkit for:', u.email);
+          return { email: u.email, name: u.displayName || payload.name || '', sub: u.localId };
+        }
+        console.log('[GoogleAuth] Identity Toolkit response:', resp.status, JSON.stringify(data).slice(0, 200));
+      } catch (e: any) {
+        console.log('[GoogleAuth] Identity Toolkit error:', e.message);
       }
     }
 
-    if (!key) {
-      console.log('[GoogleAuth] Signature verification failed with all keys');
-      return null;
-    }
-
-    if (key.kid === header.kid) {
+    cachedKeys = null;
+    const keys = await getGooglePublicKeys();
+    const key = keys.find((k: any) => k.kid === header.kid);
+    if (key) {
       const publicKey = crypto.createPublicKey({ format: 'jwk', key: { kty: 'RSA', n: key.n, e: key.e } });
       const verifier = crypto.createVerify('RSA-SHA256');
       verifier.update(parts[0] + '.' + parts[1]);
-      if (!verifier.verify(publicKey, base64UrlDecode(parts[2]))) {
-        console.log('[GoogleAuth] Signature verification failed');
-        return null;
+      if (verifier.verify(publicKey, base64UrlDecode(parts[2]))) {
+        console.log('[GoogleAuth] Verified via JWKS for:', payload.email);
+        if (!payload.email || !payload.sub) return null;
+        return { email: payload.email, name: payload.name || '', sub: payload.sub };
       }
     }
 
-    console.log('[GoogleAuth] Verified OK for:', payload.email);
-
-    if (!payload.email || !payload.sub) return null;
-    return { email: payload.email, name: payload.name || '', sub: payload.sub };
+    console.log('[GoogleAuth] All verification methods failed');
+    return null;
   } catch (err: any) {
     console.log('[GoogleAuth] Error:', err.message);
     return null;
