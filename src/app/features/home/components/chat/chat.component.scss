@@ -21,6 +21,7 @@ $text-muted: #64748b;
 }
 
 .chat-channels-toggle { display: none; }
+.chat-channels-back { display: none; }
 
 .chat-channels-overlay {
   display: none;
@@ -113,6 +114,13 @@ $text-muted: #64748b;
   align-items: center;
   justify-content: space-between;
   flex-shrink: 0;
+}
+
+.discord-channels-header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
 }
 
 .discord-channels-title {
@@ -1545,6 +1553,7 @@ $text-muted: #64748b;
 // Mobile (≤ 640px)
 @media (max-width: 640px) {
   .chat-channels-toggle { display: flex !important; }
+  .chat-channels-back { display: flex !important; }
   .discord-server-bar { width: 48px; padding: 6px 0; }
   .discord-server-icon { width: 36px; height: 36px; font-size: 14px; }
   .discord-server-divider { width: 24px; }
@@ -1552,10 +1561,10 @@ $text-muted: #64748b;
 
   .discord-channels-panel {
     position: fixed;
-    left: 48px;
+    left: 0;
     top: 0;
     bottom: 0;
-    width: 220px;
+    width: 280px;
     z-index: 200;
     transform: translateX(-100%);
     transition: transform 0.3s ease;
@@ -1583,12 +1592,16 @@ $text-muted: #64748b;
   .discord-emoji-picker { width: calc(100vw - 32px); right: 8px; left: 8px; bottom: 60px; }
   .discord-emoji-grid { grid-template-columns: repeat(8, 1fr); }
   .discord-members-panel { display: none; }
+  .cyber-focus-btn { display: none !important; }
+  .discord-channels-header-left { gap: 4px; }
+  .discord-channels-title { font-size: 12px; }
 }
 
 // Very small screens (≤ 400px)
 @media (max-width: 400px) {
-  .discord-server-bar { display: none; }
-  .discord-channels-panel { left: 0; width: 260px; }
+  .discord-server-bar { width: 40px; padding: 4px 0; }
+  .discord-server-icon { width: 32px; height: 32px; font-size: 12px; }
+  .discord-channels-panel { width: 100%; }
 }
 
 .flex-1 { flex: 1; }

@@ -42,7 +42,7 @@
   </div>
 </div>
 
-<!-- Product Modal -->
+<!-- Product Create/Edit Modal -->
 <div class="modal-overlay" *ngIf="showProductModal" (click)="closeProductModal()">
   <div class="modal-content card product-modal" (click)="$event.stopPropagation()">
     <div class="modal-header">
@@ -125,6 +125,35 @@
             </div>
             <span class="drop-limit">Maximo 2MB</span>
             <input #fileInput type="file" accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml,image/avif" (change)="onProductImageSelect($event)" style="display: none;">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-group" style="margin-top: 8px;" *ngIf="!productImageFile && !productImagePreview">
+        <label style="font-size: 11px; color: var(--text-muted);">O pega una URL de imagen</label>
+        <input type="text" [(ngModel)]="productForm.image" placeholder="https://ejemplo.com/imagen.jpg" class="form-input">
+      </div>
+
+      <!-- Precios -->
+      <div class="form-group">
+        <label>Precios</label>
+        <div class="price-rows">
+          <div class="price-row-edit" *ngFor="let p of productForm.prices; let i = index">
+            <input type="text" [(ngModel)]="p.duration" placeholder="Duración" class="form-input" style="flex: 1;">
+            <input type="number" [(ngModel)]="p.price" placeholder="Precio" class="form-input" style="flex: 0.6;" min="0" step="0.5">
+            <button class="btn-sm btn-danger" (click)="removePriceRow(i)"><i class="fas fa-times"></i></button>
+          </div>
+          <button class="btn-outline btn-sm" (click)="addPriceRow()"><i class="fas fa-plus"></i> Agregar precio</button>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" (click)="closeProductModal()">Cancelar</button>
+      <button class="btn-primary" (click)="saveProduct()" [disabled]="productSaving">
+        <i class="fas" [ngClass]="productSaving ? 'fa-spinner fa-spin' : 'fa-check'"></i>
+        {{ editingProduct ? 'Guardar Cambios' : 'Crear Producto' }}
+      </button>
+    </div>
   </div>
 </div>
 
@@ -176,34 +205,6 @@
       </button>
       <button *ngIf="isAdmin" class="btn-primary" (click)="editFromDetail()">
         <i class="fas fa-edit"></i> Editar
-      </button>
-    </div>
-  </div>
-</div>
-        <div class="form-group" style="margin-top: 8px;" *ngIf="!productImageFile && !productImagePreview">
-          <label style="font-size: 11px; color: var(--text-muted);">O pega una URL de imagen</label>
-          <input type="text" [(ngModel)]="productForm.image" placeholder="https://ejemplo.com/imagen.jpg" class="form-input">
-        </div>
-      </div>
-
-      <!-- Precios -->
-      <div class="form-group">
-        <label>Precios</label>
-        <div class="price-rows">
-          <div class="price-row-edit" *ngFor="let p of productForm.prices; let i = index">
-            <input type="text" [(ngModel)]="p.duration" placeholder="Duración" class="form-input" style="flex: 1;">
-            <input type="number" [(ngModel)]="p.price" placeholder="Precio" class="form-input" style="flex: 0.6;" min="0" step="0.5">
-            <button class="btn-sm btn-danger" (click)="removePriceRow(i)"><i class="fas fa-times"></i></button>
-          </div>
-          <button class="btn-outline btn-sm" (click)="addPriceRow()"><i class="fas fa-plus"></i> Agregar precio</button>
-        </div>
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn-outline" (click)="closeProductModal()">Cancelar</button>
-      <button class="btn-primary" (click)="saveProduct()" [disabled]="productSaving">
-        <i class="fas" [ngClass]="productSaving ? 'fa-spinner fa-spin' : 'fa-check'"></i>
-        {{ editingProduct ? 'Guardar Cambios' : 'Crear Producto' }}
       </button>
     </div>
   </div>

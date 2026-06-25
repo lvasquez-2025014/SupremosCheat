@@ -21,7 +21,12 @@
   <div class="chat-channels-overlay" [class.active]="chatChannelsOpen" (click)="chatChannelsOpen = false"></div>
   <div class="discord-channels-panel" [class.mobile-open]="chatChannelsOpen">
     <div class="discord-channels-header">
-      <h2 class="discord-channels-title">{{ chatView === 'dms' ? 'Mensajes Directos' : 'Supremo Cheats' }}</h2>
+      <div class="discord-channels-header-left">
+        <button class="discord-icon-btn chat-channels-back" (click)="chatChannelsOpen = false" title="Cerrar">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <h2 class="discord-channels-title">{{ chatView === 'dms' ? 'Mensajes Directos' : 'Supremo Cheats' }}</h2>
+      </div>
       <button *ngIf="chatView === 'dms'" class="discord-icon-btn" (click)="openNewChatModal()" title="Nueva conversacion">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       </button>
