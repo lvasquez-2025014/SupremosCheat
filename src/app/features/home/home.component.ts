@@ -22,6 +22,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   user: any = null;
   todayDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   currentTime = '';
+  userLocation = '';
   private clockInterval: any;
 
   get isClient(): boolean { return this.user?.role === 'cliente'; }
@@ -251,6 +252,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     }
     this.loadProducts();
     this.loadNotifications();
+    this.loadUserLocation();
     this.updateClock();
     this.clockInterval = setInterval(() => this.updateClock(), 1000);
     if (!this.isClient) {
@@ -268,6 +270,17 @@ export class HomeComponent implements OnInit, OnDestroy {
   updateClock(): void {
     const now = new Date();
     this.currentTime = now.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  }
+
+  loadUserLocation(): void {
+    fetch('https://ipapi.co/json/')
+      .then(r => r.json())
+      .then(data => {
+        if (data.city && data.country_name) {
+          this.userLocation = `${data.city}, ${data.country_name}`;
+        }
+      })
+      .catch(() => {});
   }
 
   showSection(section: string): void {

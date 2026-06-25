@@ -608,6 +608,18 @@ $topbar-height: 64px;
   text-transform: capitalize;
 }
 
+.topbar-location {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #94a3b8;
+  font-weight: 500;
+  white-space: nowrap;
+
+  svg { color: $cyan; }
+}
+
 
 .topbar-right {
   display: flex;
