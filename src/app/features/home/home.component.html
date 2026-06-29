@@ -12,9 +12,9 @@
         </div>
       </div>
       <nav class="guest-nav">
-        <a class="guest-nav-link" href="#productos">Productos</a>
-        <a class="guest-nav-link" href="#ventajas">Ventajas</a>
-        <a class="guest-nav-link" href="#opiniones">Opiniones</a>
+        <a class="guest-nav-link" [class.active]="activeGuestSection === 'productos'" (click)="scrollToSection('productos')">Productos</a>
+        <a class="guest-nav-link" [class.active]="activeGuestSection === 'ventajas'" (click)="scrollToSection('ventajas')">Ventajas</a>
+        <a class="guest-nav-link" [class.active]="activeGuestSection === 'opiniones'" (click)="scrollToSection('opiniones')">Opiniones</a>
       </nav>
       <div class="guest-header-actions">
         <a routerLink="/auth/login" class="guest-login-btn">

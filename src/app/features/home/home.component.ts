@@ -23,7 +23,9 @@ export class HomeComponent implements OnInit, OnDestroy {
   todayDate = new Date().toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
   currentTime = '';
   userLocation = '';
+  activeGuestSection = '';
   private clockInterval: any;
+  private scrollListener: any;
 
   get isClient(): boolean { return this.user?.role === 'cliente'; }
   get isAdmin(): boolean { return this.user?.role === 'admin' || this.user?.role === 'superadmin'; }
@@ -261,10 +263,19 @@ export class HomeComponent implements OnInit, OnDestroy {
     setTimeout(() => {
       this.loading = false;
     }, 1500);
+
+    if (this.isGuest) {
+      this.scrollListener = () => this.updateActiveGuestSection();
+      window.addEventListener('scroll', this.scrollListener, { passive: true });
+      setTimeout(() => this.updateActiveGuestSection(), 500);
+    }
   }
 
   ngOnDestroy(): void {
     if (this.clockInterval) clearInterval(this.clockInterval);
+    if (this.scrollListener) {
+      window.removeEventListener('scroll', this.scrollListener);
+    }
   }
 
   updateClock(): void {
@@ -301,6 +312,29 @@ export class HomeComponent implements OnInit, OnDestroy {
   toggleSidebar(): void { this.sidebarCollapsed = !this.sidebarCollapsed; }
   toggleMobileMenu(): void { this.mobileMenuOpen = !this.mobileMenuOpen; }
   logout(): void { this.auth.logout(); }
+
+  scrollToSection(sectionId: string): void {
+    const el = document.getElementById(sectionId);
+    if (el) {
+      const headerOffset = 80;
+      const elementPosition = el.getBoundingClientRect().top + window.pageYOffset;
+      window.scrollTo({ top: elementPosition - headerOffset, behavior: 'smooth' });
+    }
+  }
+
+  private updateActiveGuestSection(): void {
+    const sections = ['ventajas', 'productos', 'opiniones'];
+    const scrollPos = window.scrollY + 200;
+
+    for (let i = sections.length - 1; i >= 0; i--) {
+      const el = document.getElementById(sections[i]);
+      if (el && el.offsetTop <= scrollPos) {
+        this.activeGuestSection = sections[i];
+        return;
+      }
+    }
+    this.activeGuestSection = '';
+  }
 
   getUserColor(name: string): string {
     if (!name) return this.colorPalette[0];
