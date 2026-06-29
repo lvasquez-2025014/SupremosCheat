@@ -110,13 +110,82 @@ html { scroll-behavior: smooth; }
 ::-webkit-scrollbar-thumb { background: $neon-pink; border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: $neon-orange; }
 
+// ═══════════════ GLOBAL THEME ═══════════════
+:root {
+  --theme-primary: #22d3ee;
+  --theme-primary-rgb: 34,211,238;
+  --theme-accent: #06b6d4;
+  --theme-glow: rgba(34,211,238,0.3);
+  --theme-gradient: linear-gradient(135deg, #22d3ee, #06b6d4);
+}
+
+// ═══════════════ THEME OVERRIDES ═══════════════
+// Apply theme colors to common UI elements globally
+
+// Buttons with .glow-btn or .btn-primary
+.glow-btn,
+.cyber-save-btn,
+.btn-primary {
+  background: var(--theme-gradient) !important;
+  &:hover {
+    box-shadow: 0 8px 24px var(--theme-glow) !important;
+  }
+}
+
+// Focus states
+.cyber-input:focus,
+.us-search-input:focus,
+input:focus {
+  border-color: var(--theme-primary) !important;
+  box-shadow: 0 0 0 3px rgba(var(--theme-primary-rgb), 0.15) !important;
+}
+
+// Active sidebar item
+.nav-item.active {
+  background: linear-gradient(90deg, rgba(var(--theme-primary-rgb), 0.15), transparent) !important;
+  border-left: 3px solid var(--theme-primary) !important;
+  color: var(--theme-primary) !important;
+}
+
+// Active filter buttons
+.us-filter-btn.us-filter-active {
+  color: var(--theme-primary) !important;
+  background: rgba(var(--theme-primary-rgb), 0.1) !important;
+  border-color: rgba(var(--theme-primary-rgb), 0.3) !important;
+  box-shadow: 0 0 12px rgba(var(--theme-primary-rgb), 0.15) !important;
+}
+
+// Toggle active
+.cyber-toggle.active {
+  background: var(--theme-gradient) !important;
+  box-shadow: 0 0 20px var(--theme-glow) !important;
+}
+
+// Neon text
+.cyber-neon-text {
+  text-shadow: 0 0 10px rgba(var(--theme-primary-rgb), 0.5), 0 0 20px rgba(var(--theme-primary-rgb), 0.3) !important;
+}
+
+// Header icon
+.cyber-header-icon {
+  background: linear-gradient(135deg, rgba(var(--theme-primary-rgb), 0.1), rgba(139, 92, 246, 0.1)) !important;
+  border-color: rgba(var(--theme-primary-rgb), 0.2) !important;
+  color: var(--theme-primary) !important;
+}
+
+// Title underline
+.us-title-underline {
+  background: linear-gradient(90deg, var(--theme-primary), #a78bfa, #ec4899, var(--theme-primary)) !important;
+  box-shadow: 0 0 10px rgba(var(--theme-primary-rgb), 0.5), 0 0 20px rgba(6, 182, 212, 0.3) !important;
+}
+
 // ═══════════════ GLOBAL CURSOR GLOW ═══════════════
 #cursor-glow {
   position: fixed;
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(168, 85, 247, 0.15) 0%, rgba(168, 85, 247, 0.05) 30%, transparent 70%);
+  background: radial-gradient(circle, rgba(var(--theme-primary-rgb), 0.15) 0%, rgba(var(--theme-primary-rgb), 0.05) 30%, transparent 70%);
   pointer-events: none;
   z-index: 99999;
   transform: translate(-50%, -50%);

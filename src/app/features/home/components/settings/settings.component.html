@@ -30,16 +30,52 @@
           <label class="cyber-form-label">EMAIL DE CONTACTO</label>
           <input type="email" class="cyber-input" [(ngModel)]="settings.storeEmail" />
         </div>
-        <button class="cyber-save-btn" (click)="showToast('Configuración guardada', 'Los cambios han sido aplicados', 'success')">
+        <button class="cyber-save-btn" (click)="saveSettings()">
           <i class="fas fa-check"></i> Guardar Cambios
         </button>
+      </div>
+    </div>
+
+    <!-- Tema / Color Palette -->
+    <div class="cyber-config-card">
+      <div class="cyber-card-header">
+        <div class="cyber-header-icon-wrap purple">
+          <i class="fas fa-palette"></i>
+        </div>
+        <div>
+          <h2 class="cyber-card-title">Tema</h2>
+          <p class="cyber-card-subtitle">Personaliza el color de la interfaz</p>
+        </div>
+      </div>
+      <div class="cyber-card-body">
+        <div class="theme-palette">
+          <button *ngFor="let theme of themeService.themes"
+                  class="theme-swatch"
+                  [class.active]="themeService.currentTheme.name === theme.name"
+                  [style.background]="theme.gradient"
+                  (click)="selectTheme(theme)"
+                  [title]="theme.label">
+            <svg *ngIf="themeService.currentTheme.name === theme.name" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+            </svg>
+          </button>
+        </div>
+        <p class="theme-current-label">Tema actual: <strong>{{ themeService.currentTheme.label }}</strong></p>
+
+        <div class="cyber-toggle-row">
+          <div class="cyber-toggle-info">
+            <h3 class="cyber-toggle-label">Modo Oscuro</h3>
+            <p class="cyber-toggle-desc">Tema oscuro de la interfaz</p>
+          </div>
+          <div class="cyber-toggle" [class.active]="settings.darkMode" (click)="toggleDarkMode()"></div>
+        </div>
       </div>
     </div>
 
     <!-- Preferencias -->
     <div class="cyber-config-card">
       <div class="cyber-card-header">
-        <div class="cyber-header-icon-wrap purple">
+        <div class="cyber-header-icon-wrap green">
           <i class="fas fa-sliders-h"></i>
         </div>
         <div>
@@ -53,28 +89,21 @@
             <h3 class="cyber-toggle-label">Notificaciones Push</h3>
             <p class="cyber-toggle-desc">Recibe alertas en tiempo real</p>
           </div>
-          <div class="cyber-toggle" [class.active]="settings.notifications" (click)="settings.notifications = !settings.notifications"></div>
+          <div class="cyber-toggle" [class.active]="settings.notifications" (click)="toggleNotifications()"></div>
         </div>
         <div class="cyber-toggle-row">
           <div class="cyber-toggle-info">
             <h3 class="cyber-toggle-label">Alertas por Email</h3>
             <p class="cyber-toggle-desc">Resumen diario de actividad</p>
           </div>
-          <div class="cyber-toggle" [class.active]="settings.emailAlerts" (click)="settings.emailAlerts = !settings.emailAlerts"></div>
-        </div>
-        <div class="cyber-toggle-row">
-          <div class="cyber-toggle-info">
-            <h3 class="cyber-toggle-label">Modo Oscuro</h3>
-            <p class="cyber-toggle-desc">Tema oscuro de la interfaz</p>
-          </div>
-          <div class="cyber-toggle active"></div>
+          <div class="cyber-toggle" [class.active]="settings.emailAlerts" (click)="toggleEmailAlerts()"></div>
         </div>
         <div class="cyber-toggle-row">
           <div class="cyber-toggle-info">
             <h3 class="cyber-toggle-label">Autenticación en 2 Pasos</h3>
             <p class="cyber-toggle-desc">Seguridad adicional para tu cuenta</p>
           </div>
-          <div class="cyber-toggle" [class.active]="settings.twoFactor" (click)="settings.twoFactor = !settings.twoFactor"></div>
+          <div class="cyber-toggle" [class.active]="settings.twoFactor" (click)="toggleTwoFactor()"></div>
         </div>
       </div>
     </div>
@@ -82,7 +111,7 @@
     <!-- Métodos de Pago -->
     <div class="cyber-config-card">
       <div class="cyber-card-header">
-        <div class="cyber-header-icon-wrap green">
+        <div class="cyber-header-icon-wrap yellow">
           <i class="fas fa-credit-card"></i>
         </div>
         <div>
@@ -91,7 +120,7 @@
         </div>
       </div>
       <div class="cyber-card-body">
-        <div class="cyber-payment-card paypal" *ngFor="let pm of paymentMethods">
+        <div class="cyber-payment-card" *ngFor="let pm of paymentMethods">
           <div class="cyber-payment-icon" [style.background]="pm.color + '20'" [style.color]="pm.color">
             <i [class]="pm.icon"></i>
           </div>
@@ -117,14 +146,24 @@
       </div>
       <div class="cyber-card-body">
         <div class="cyber-danger-actions">
-          <button class="cyber-delete-btn">
+          <button class="cyber-delete-btn" (click)="deleteAccount()">
             <i class="fas fa-trash-alt"></i> Eliminar Cuenta
           </button>
-          <button class="cyber-export-btn">
+          <button class="cyber-export-btn" (click)="exportData()">
             <i class="fas fa-download"></i> Exportar Datos
           </button>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div class="cyber-toasts">
+    <div *ngFor="let t of toasts" class="cyber-toast" [class]="'cyber-toast-' + t.type">
+      <i *ngIf="t.type === 'success'" class="fas fa-check-circle"></i>
+      <i *ngIf="t.type === 'error'" class="fas fa-times-circle"></i>
+      <i *ngIf="t.type === 'info'" class="fas fa-info-circle"></i>
+      <span>{{ t.message }}</span>
     </div>
   </div>
 </section>
